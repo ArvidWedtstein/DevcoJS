@@ -1,0 +1,23 @@
+{
+  "name": "devcojs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "source",
+	"engines": {
+		"node": ">=10"
+	},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+		"src",
+		"index.d.ts"
+	],
+  "keywords": ["Devco"],
+  "author": {
+    "name": "Arvid Wedtstein",
+    "email": "arvidw0310@gmail.com"
+  },
+  "license": "MIT",
+  "organization": "devco"
+}
