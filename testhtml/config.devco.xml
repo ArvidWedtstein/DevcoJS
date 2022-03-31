@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<devco-configuration>
+  <applications>
+    <application name="app1">
+      ...
+    </application>
+    <application name="app2">
+      ...
+    </application>
+    <application>
+      ...
+    </application>
+  </applications>
+</devco-configuration>
