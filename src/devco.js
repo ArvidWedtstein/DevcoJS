@@ -12,8 +12,6 @@ module.exports = class Devco {
 
 
         console.log(process.cwd())
-        console.log(process.env.HOME)
-
         var framework = {
             options: options,
             version: '0.0.1'
