@@ -1,5 +1,5 @@
 {
-  "name": "devcojs",
+  "name": "@arvidwedtstein/devcojs",
   "version": "1.0.0",
   "description": "",
   "main": "source",
@@ -19,5 +19,7 @@
     "email": "arvidw0310@gmail.com"
   },
   "license": "MIT",
-  "organization": "devco"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
