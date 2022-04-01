@@ -2,7 +2,7 @@
   "name": "@arvidwedtstein/devcojs",
   "version": "1.0.1",
   "description": "",
-  "main": "source",
+  "main": "src/devco.js",
 	"engines": {
 		"node": ">=10"
 	},
@@ -10,8 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
-		"src",
-		"index.d.ts"
+		"src"
 	],
   "keywords": ["Devco"],
   "author": {

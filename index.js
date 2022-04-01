@@ -8,9 +8,9 @@
       };
   
       // Look for elements using the controller 
-      var element = document.querySelector('[kontainer]');
+      var element = document.querySelector('[container]');
       if (!element) {   
-        return console.error('Kontainer er ikke definert');
+        return console.error('Container');
       }
   
       // Create a new instance and save it
@@ -49,11 +49,33 @@
         hvis[hvisValue].elements.push(element);
       });   
 
+      var forHver = {};
+      Array.prototype.slice.call(element.querySelectorAll('[for]'))
+        .map(function (element) {
+        var forValue = element.getAttribute('for');
+        var key = element.getAttribute(':key');
+
+        var array = forValue.split(' ')
+        array = array[array.length-1]
+        console.log("FoR LOOP", array)
+
+        if (!forHver[key]) {
+          forHver[key] = {
+            key: key,
+            array: array,
+            forValue: forValue,
+            elements: []
+          }
+        }
+        forHver[key].elements.push(element);
+      });   
+
 
       // Converts objects without '"' to object with '"' for JSON.parse
       const objectStr = ((str) => {
         str = /^[\n\s]*if.*\(.*\)/.test(str) || /^(let|const)\s/.test(str) ? `(() => { ${str} })()` : str;
         var tokens = str.split(",")
+        console.log(tokens)
         for (u = 0; u < tokens.length; u++) {
           let t = tokens[u].split(" ")
           for (i = 0; i < t.length; i++) {
@@ -95,24 +117,6 @@
           console.log("obj", obj)
         }
       });
-
-
-      // on
-      // var ved = {};
-      // Array.prototype.slice.call(element.querySelectorAll('[ved]'))
-      //   .map(function (element) {
-      //   var vedValue = element.getAttribute('ved');
-      //   console.log(vedValue2)
-          
-      //   if (!ved[vedValue]) {
-      //     ved[vedValue] = {
-      //       vedValue: vedValue,
-      //       elements: []
-      //     }
-      //   }
-  
-      //   ved[vedValue].elements.push(element);
-      // });
       
       // bryter
       var bryter = {};
@@ -135,14 +139,16 @@
         set: function (target, prop, value) {    
           
           console.log("|target: ", target, "|prop: ", prop, "|value: ",value)
-
+          var test = [
+            {dfdd: "rrr"}
+          ]
           var bind = bindings[prop];
           var bryt = bryter[prop];
           var hvis2 = hvis[prop];
 
+          var forHverData = Object.values(forHver).find(d => d.forValue === prop)
 
-          // var ved = ved[prop];
-          
+
           if (bind) {  
             bind.elements.forEach(function (element) {
               element.value = value;
@@ -161,9 +167,6 @@
             });
           }
           if (hvis2) {
-            console.table(data[hvis2])
-            
-            console.log("dataaaaaabc", data[value])
             hvis2.elements.forEach(function (element) {
               if (data[value] && data[value].dataValue) {
                 element.style.display = 'block';
@@ -175,11 +178,16 @@
               }
             });
           }
-          // if (ved) {
-          //   ved.elements.forEach(function (element) {
-          //     element.innerHTML = value;
-          //   });
-          // }
+          if (forHverData) {
+            console.log("dataaaaaabc", data[forHverData.array])
+            console.log(data[forHverData.array].dataValue)
+            forHverData.elements.forEach(function (element) {
+              for (let i = 0; i < parseInt(data[forHverData.array].dataValue); i++) {
+                const clone = element.cloneNode(true)
+                element.appendChild(clone)
+              }
+            });
+          }
 
           return Reflect.set(target, prop, value);
         }
@@ -197,10 +205,18 @@
       });
 
       Object.keys(hvis).forEach(function (hvisValue) {
-        var hvisF = hvis[hvisValue];;
+        var hvisF = hvis[hvisValue];
 
         hvisF.elements.forEach(function (element) {
           proxy[hvisF.hvisValue] = element.getAttribute("hvis");
+        })  
+      });
+
+      Object.keys(forHver).forEach(function (forValue) {
+        var forF = forHver[forValue];
+
+        forF.elements.forEach(function (element) {
+          proxy[forF.forValue] = element.getAttribute("for");
         })  
       });
       

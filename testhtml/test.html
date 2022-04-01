@@ -18,12 +18,11 @@
   </style>
 </head>
 <body>
-  <div kontainer>
+  <div container>
     <div data='{ bruh: true }'>
       <input koble="message"/>
       <div hvis="bruh" onclick="onButtonClick()">
         <button>Click!</button>
-          
       </div>
       <ul bryter="message">
         <li sak="1">test1</li>
@@ -36,20 +35,13 @@
       </n-boks>
       <hover-card tittel="pain?" tekst="yeeeeeeeeeeeees"><p>hahahahhah</p></hover-card>
       <hover-card tekst="aaaaaaa"></hover-card>
-      
-      
+    </div>
+    <div data='{ array: 8 }'>
+      <div for="item in array" :key="5">
+        <p>{{ item }}</p>
+      </div>  
     </div>
   </div>
-  <script type="module">
-    import devco from '@arvidwedtstein/devco';
-    export default {
-      setup() {
-        return {
-          message: "",
-          bruh: false
-        }
-      }
-    }
-  </script>
+  <script src="../index.js"></script>
 </body>
 </html>
