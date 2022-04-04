@@ -17,7 +17,6 @@
       var ctrl = new controllers[name].factory();
       controllers[name].instances.push(ctrl);
   
-      console.log(ctrl)
       // Get elements bound to properties
       var bindings = {};
       Array.prototype.slice.call(element.querySelectorAll('[koble]'))
@@ -56,18 +55,18 @@
         var key = element.getAttribute(':key');
 
         var array = forValue.split(' ')
-        array = array[array.length-1]
-        console.log("FoR LOOP", array)
+
+        let arrayval = array[array.length-1]
 
         if (!forHver[key]) {
           forHver[key] = {
             key: key,
-            array: array,
+            array: arrayval,
             forValue: forValue,
             elements: []
           }
+          forHver[key].elements.push(element);
         }
-        forHver[key].elements.push(element);
       });   
 
 
@@ -133,20 +132,32 @@
         bryter[bryterValue].elements.push(element);
 
       });  
+
+      // html data
+      var html = {};
+      Array.prototype.slice.call(element.querySelectorAll('[html]'))
+        .map(function (element) {
+        var htmlValue = element.getAttribute('html');
+            
+        if (!html[htmlValue]) {
+          html[htmlValue] = {
+            htmlValue: htmlValue,
+            elements: []
+          }
+        }
+        html[htmlValue].elements.push(element);
+
+      });  
   
       // Update DOM element bound when controller property is set
       var proxy = new Proxy (ctrl, {
         set: function (target, prop, value) {    
           
-          console.log("|target: ", target, "|prop: ", prop, "|value: ",value)
-          var test = [
-            {dfdd: "rrr"}
-          ]
+
           var bind = bindings[prop];
           var bryt = bryter[prop];
           var hvis2 = hvis[prop];
-
-          var forHverData = Object.values(forHver).find(d => d.forValue === prop)
+          var html2 = html[prop];
 
 
           if (bind) {  
@@ -171,21 +182,16 @@
               if (data[value] && data[value].dataValue) {
                 element.style.display = 'block';
               } else if (!data[value] && eval(value) == true | false) {
-                console.log("eval value", eval(value))
                 element.style.display = value == 'true' ? 'block' : 'none';
               } else {
                 element.style.display = 'none';
               }
             });
           }
-          if (forHverData) {
-            console.log("dataaaaaabc", data[forHverData.array])
-            console.log(data[forHverData.array].dataValue)
-            forHverData.elements.forEach(function (element) {
-              for (let i = 0; i < parseInt(data[forHverData.array].dataValue); i++) {
-                const clone = element.cloneNode(true)
-                element.appendChild(clone)
-              }
+          if (html2) {
+            html2.elements.forEach(function (element) {
+              console.log(value.toString())
+              console.log(data)
             });
           }
 
@@ -211,12 +217,35 @@
           proxy[hvisF.hvisValue] = element.getAttribute("hvis");
         })  
       });
+      Object.keys(html).forEach(function (htmlValue) {
+        var htmlF = html[htmlValue];
+
+        htmlF.elements.forEach(function (element) {
+          proxy[htmlF.htmlValue] = element.getAttribute("html");
+        })  
+      });
 
       Object.keys(forHver).forEach(function (forValue) {
         var forF = forHver[forValue];
 
         forF.elements.forEach(function (element) {
-          proxy[forF.forValue] = element.getAttribute("for");
+          console.log(forF)
+          if (!data[forF.forValue.split(' ')[0]]) {
+            data[forF.forValue.split(' ')[0]] = {
+              dataValue: 0,
+            }
+          }
+          for (let b = 0; b < parseInt(data[forF.array].dataValue); b++) {
+            data[forF.key].dataValue = b;
+            let clone = element.cloneNode(true)
+            clone.removeAttributeNode(clone.getAttributeNode('for'))
+            clone.removeAttributeNode(clone.getAttributeNode(':key'))
+            clone.setAttribute(`data-v-${forF.key}loop`, "")
+            element.parentNode.append(clone)
+          }
+
+          
+          element.remove()
         })  
       });
       
@@ -224,7 +253,7 @@
       // Fill proxy with ctrl properties
       // and return proxy, not the ctrl !
       Object.assign(proxy, ctrl);
-      console.log("Proxy:", proxy)
+
       return proxy;
     }
   
@@ -271,12 +300,7 @@ function createElement(tag, attrs, children) {
 // ----------------------------
 // Custom Elements
 // ----------------------------
-class NorskBoks extends HTMLElement {
-  constructor() {
-    // Always call super first in constructor
-    super();
-  }
-}
+
 class Devcologo extends HTMLElement {
   constructor() {
     // Always call super first in constructor
@@ -364,16 +388,16 @@ class Hovercard extends HTMLElement {
       imgUrl = 'devco-logo.png';
     }
 
-    var body = createElement('n-boks', {class: "container"}, [
-      createElement('n-boks', {class: "card"}, [
-        createElement('n-boks', {class: "face face1"}, [
-          createElement('n-boks', {class: "content"}, [
+    var body = createElement('div', {class: "container"}, [
+      createElement('div', {class: "card"}, [
+        createElement('div', {class: "face face1"}, [
+          createElement('div', {class: "content"}, [
             createElement('img', {src: imgUrl}),
             createElement('h3', {tekst: title})
           ])
         ]),
-        createElement('n-boks', {class: "face face2"}, [
-          createElement('n-boks', {class: "content"}, [
+        createElement('div', {class: "face face2"}, [
+          createElement('div', {class: "content"}, [
             createElement('p', {tekst: text})
           ])
         ])
@@ -484,7 +508,6 @@ class Hovercard extends HTMLElement {
 
 
 const Customelements = {
-  "n-boks": {klasse: NorskBoks, extends: "div"},
   "devco-logo": {klasse: Devcologo},
   "hover-card": {klasse: Hovercard},
 }
