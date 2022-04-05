@@ -5,22 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
-    body{
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: consolas;
-}
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: consolas;
+    }
   </style>
 </head>
+<!--https://github.com/vuejs/vue/blob/6aa11872c88481dfa2da151536317176c48f226c/packages/weex-template-compiler/build.js#L942-->
 <body>
   <div container>
-    <div data='{ bruh: true }'>
-      <input koble="message"/>
+    <devco-data>
+      {
+        "name": "test",
+        "age": "20",
+        "t": ["1", "2", "yes", "no"],
+        "bruh": true, 
+        "melding": "message",
+        "loop": 8,
+        "testobject": {
+          "mydata1": "1",
+          "mydata2": "2",
+          "mydata3": "3",
+          "mydata4": "4"
+        }
+      }
+    </devco-data>
+    <div>
+      <input id="input" koble="message"/>
       <div hvis="bruh" onclick="onButtonClick()">
         <button>Click!</button>
       </div>
@@ -29,15 +46,15 @@
         <li sak="2">test2</li>
         <li sak="3">test3</li>
       </ul>
-      <devco-logo data='{ melding: "message" }'></devco-logo>
+      <devco-logo text="test"></devco-logo>
       <div>
-        <p data='{ gg: "bruh" }'>teeeest</p>
+        <p html="bruh"></p>
+        <p html="loop"></p>
       </div>
       <hover-card tittel="pain?" tekst="yeeeeeeeeeeeees"><p>hahahahhah</p></hover-card>
-      <hover-card tekst="aaaaaaa"></hover-card>
     </div>
-    <div data='{ array: 8 }'>
-      <div for="item in array" :key="5">
+    <div>
+      <div for="item in ['test', 'test2', 'test3']" :key="item">
         <p html="item">{{ test }}</p>
       </div>  
     </div>
