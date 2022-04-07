@@ -1161,7 +1161,6 @@
      * value into the final value.
      */
     var strats = config.optionMergeStrategies;
-  
     /**
      * Options with restrictions
      */
@@ -1207,9 +1206,7 @@
       return to
     }
   
-    /**
-     * Data
-     */
+    
     function mergeDataOrFn (
       parentVal,
       childVal,
@@ -1429,7 +1426,7 @@
      * Ensure all props option syntax are normalized into the
      * Object-based format.
      */
-    function normalizeProps (options, vm) {
+     function normalizeProps (options, vm) {
       var props = options.props;
       if (!props) { return }
       var res = {};
@@ -1524,6 +1521,7 @@
       child,
       vm
     ) {
+
       {
         checkComponents(child);
       }
@@ -1579,6 +1577,7 @@
       id,
       warnMissing
     ) {
+      
       /* istanbul ignore if */
       if (typeof id !== 'string') {
         return
@@ -1614,6 +1613,8 @@
       var prop = propOptions[key];
       var absent = !hasOwn(propsData, key);
       var value = propsData[key];
+
+      
       // boolean casting
       var booleanIndex = getTypeIndex(Boolean, prop.type);
       if (booleanIndex > -1) {
@@ -1648,6 +1649,7 @@
      * Get the default value of a prop.
      */
     function getPropDefaultValue (vm, prop, key) {
+      
       // no default, return undefined
       if (!hasOwn(prop, 'default')) {
         return undefined
@@ -12018,4 +12020,3 @@
     return Vue;
   
   }));
-  
