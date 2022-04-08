@@ -483,9 +483,9 @@
      */
     var unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/;
   
-    /**
-     * Check if a string starts with $ or _
-     */
+    /*
+    * Check if a string starts with $ or _
+    */
     function isReserved (str) {
       var c = (str + '').charCodeAt(0);
       return c === 0x24 || c === 0x5F
@@ -2649,7 +2649,6 @@
       val,
       render
     ) {
-        console.log('VUE RENDER LIST FOR ')
       var ret, i, l, keys, key;
       if (Array.isArray(val) || typeof val === 'string') {
         ret = new Array(val.length);
@@ -3962,7 +3961,9 @@
         // based on the rendering backend used.
         if (!prevVnode) {
           // initial render
+          console.log("VUE", vm.$el)
           vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);
+          console.log("VUE AFTER", vm.$el)
         } else {
           // updates
           vm.$el = vm.__patch__(prevVnode, vnode);
@@ -9626,7 +9627,6 @@
       attrs,
       parent
     ) {
-        console.log('CREATE AST ELEMENT', tag)
       return {
         type: 1,
         tag: tag,
@@ -11749,7 +11749,6 @@
         }
   
         // compile
-        console.log('TEMPLATE', template, options)
         var compiled = compile(template, options);
   
         // check compilation errors/tips

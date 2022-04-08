@@ -5546,12 +5546,10 @@ const createElement = (tag, attrs, children) => {
         // internal component options needs special treatment.
         initInternalComponent(vm, options);
       } else {
-        vm.$options = mergeOptions(
-          resolveConstructorOptions(vm.constructor),
-          options || {},
-          vm
-        );
+        console.log(resolveConstructorOptions(vm.constructor))
+        vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
       }
+
       {
         initProxy(vm);
       }
