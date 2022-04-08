@@ -131,7 +131,6 @@ const createElement = (tag, attrs, children) => {
   }
 
   var mustUseProp = function (tag, type, attr) {
-    console.log('MUSTUSEPROP', tag, type, attr)
     return (
       (attr === 'value' && acceptValue(tag)) && type !== 'button' ||
       (attr === 'selected' && tag === 'option') ||
@@ -661,13 +660,14 @@ const createElement = (tag, attrs, children) => {
       }
       var options = typeof vm === 'function' && vm.cid != null
         ? vm.options
-        : vm._isdevco
+        : vm._isDevco
           ? vm.$options || vm.constructor.options
           : vm;
       var name = options.name || options._componentTag;
       var file = options.__file;
       if (!name && file) {
-        var match = file.match(/([^/\\]+)\.devco$/);
+        var match = file.match(/([^/\\]+)\.html$/);
+        // var match = file.match(/([^/\\]+)\.devco$/);
         name = match && match[1];
       }
 
@@ -1392,6 +1392,7 @@ const createElement = (tag, attrs, children) => {
     }
 
     var options = this.$options;
+
     // resolve template/el and convert to render function
     if (!options.render) {
       var template = options.template;
@@ -1765,7 +1766,9 @@ const createElement = (tag, attrs, children) => {
     return ret
   };
   strats.provide = mergeDataOrFn;
-
+  function toRawType (value) {
+    return _toString.call(value).slice(8, -1)
+  }
   /**
    * Default strategy.
    */
@@ -1779,9 +1782,10 @@ const createElement = (tag, attrs, children) => {
      * Ensure all props option syntax are normalized into the
      * Object-based format.
      */
-   function normalizeProps (options, vm) {
+  function normalizeProps (options, vm) {
+    console.log('OPS', options);
     var props = options.props;
-    if (!props) { return }
+    // if (!props) { return }
     var res = {};
     var i, val, name;
     if (Array.isArray(props)) {
@@ -1811,6 +1815,7 @@ const createElement = (tag, attrs, children) => {
       );
     }
     options.props = res;
+    
   }
 
   /**
@@ -1863,7 +1868,7 @@ const createElement = (tag, attrs, children) => {
     if (typeof child === 'function') {
       child = child.options;
     }
-
+    console.log("CHILD",child)
     normalizeProps(child, vm);
     normalizeInject(child, vm);
     normalizeDirectives(child);
@@ -1889,7 +1894,6 @@ const createElement = (tag, attrs, children) => {
       mergeField(key);
     }
     for (key in child) {
-      console.log(parent, key)
       if (!hasOwn(parent, key)) {
         mergeField(key);
       }
@@ -1913,7 +1917,6 @@ const createElement = (tag, attrs, children) => {
    */
   function resolveConstructorOptions (Ctor) {
     var options = Ctor.options;
-    console.log('Ctor', options);
     if (Ctor.super) {
       var superOptions = resolveConstructorOptions(Ctor.super);
       var cachedSuperOptions = Ctor.superOptions;
@@ -1927,6 +1930,7 @@ const createElement = (tag, attrs, children) => {
         if (modifiedOptions) {
           extend(Ctor.extendOptions, modifiedOptions);
         }
+        
         options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions);
         if (options.name) {
           options.components[options.name] = Ctor;
@@ -2091,6 +2095,65 @@ const createElement = (tag, attrs, children) => {
           pruneCacheEntry(cache, key, keys, _devconode);
         }
       }
+    }
+  }
+  function toggleObserving (value) {
+    shouldObserve = value;
+  }
+  function initProps (vm, propsOptions) {
+    var propsData = vm.$options.propsData || {};
+    var props = vm._props = {};
+    // cache prop keys so that future props updates can iterate using Array
+    // instead of dynamic object key enumeration.
+    var keys = vm.$options._propKeys = [];
+    var isRoot = !vm.$parent;
+    // root instance props should be converted
+    if (!isRoot) {
+      toggleObserving(false);
+    }
+    var loop = function ( key ) {
+      keys.push(key);
+      var value = validateProp(key, propsOptions, propsData, vm);
+      /* istanbul ignore else */
+      {
+        var hyphenatedKey = hyphenate(key);
+        if (isReservedAttribute(hyphenatedKey) ||
+            config.isReservedAttr(hyphenatedKey)) {
+          warn(
+            ("\"" + hyphenatedKey + "\" is a reserved attribute and cannot be used as component prop."),
+            vm
+          );
+        }
+        defineReactive$$1(props, key, value, function () {
+          if (!isRoot && !isUpdatingChildComponent) {
+            warn(
+              "Avoid mutating a prop directly since the value will be " +
+              "overwritten whenever the parent component re-renders. " +
+              "Instead, use a data or computed property based on the prop's " +
+              "value. Prop being mutated: \"" + key + "\"",
+              vm
+            );
+          }
+        });
+      }
+      // static props are already proxied on the component's prototype
+      // during Vue.extend(). We only need to proxy props defined at
+      // instantiation here.
+      if (!(key in vm)) {
+        proxy(vm, "_props", key);
+      }
+    };
+
+    for (var key in propsOptions) loop( key );
+    toggleObserving(true);
+  }
+  function assertObjectType (name, value, vm) {
+    if (!isPlainObject(value)) {
+      warn(
+        "Invalid value for option \"" + name + "\": expected an Object, " +
+        "but got " + (toRawType(value)) + ".",
+        vm
+      );
     }
   }
   /*
@@ -2321,7 +2384,8 @@ const createElement = (tag, attrs, children) => {
         'Always create fresh devconode data objects in each render!',
         context
       );
-      return createEmptyNode()
+      createEmptyDevcoNode
+      return createEmptyDevcoNode()
     }
     // object syntax in v-bind
     if (isDef(data) && isDef(data.is)) {
@@ -2329,7 +2393,7 @@ const createElement = (tag, attrs, children) => {
     }
     if (!tag) {
       // in case of component :is set to falsy value
-      return createEmptyNode()
+      return createEmptyDevcoNode()
     }
     // warn against non-primitive key
     if (isDef(data) && isDef(data.key) && !isPrimitive(data.key)
@@ -2378,7 +2442,7 @@ const createElement = (tag, attrs, children) => {
     } else if (isDef(devconode)) {
       return devconode
     } else {
-      return createEmptyNode()
+      return createEmptyDevcoNode()
     }
   }
 
@@ -3919,7 +3983,9 @@ const createElement = (tag, attrs, children) => {
     el,
     hydrating
   ) {
+    console.log("EL", el)
     vm.$el = el;
+    console.log("EL", vm.$el)
     if (!vm.$options.render) {
       vm.$options.render = createEmptyDevcoNode;
       {
@@ -3951,6 +4017,7 @@ const createElement = (tag, attrs, children) => {
 
         mark(startTag);
         var devconode = vm._render();
+
         mark(endTag);
         measure(("devco " + name + " render"), startTag, endTag);
 
@@ -4204,6 +4271,7 @@ const createElement = (tag, attrs, children) => {
     var modules = backend.modules;
     var nodeOps = backend.nodeOps;
 
+    console.log(backend)
     for (i = 0; i < hooks.length; ++i) {
       cbs[hooks[i]] = [];
       for (j = 0; j < modules.length; ++j) {
@@ -4303,19 +4371,15 @@ const createElement = (tag, attrs, children) => {
           creatingElmInDevcoPre--;
         }
       } else if (isTrue(devconode.isComment)) {
-        console.log('ISTRUEW')
-        console.log(devconode.elm)
         devconode.elm = nodeOps.createComment(devconode.text);
         insert(parentElm, devconode.elm, refElm);
       } else {
-        console.log("VNODE", devconode)
         devconode.elm = nodeOps.createTextNode(devconode.text);
         insert(parentElm, devconode.elm, refElm);
       }
     }
 
     function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
-      console.log(vnode)
       var i = vnode.data;
       if (isDef(i)) {
         var isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
@@ -4872,8 +4936,7 @@ const createElement = (tag, attrs, children) => {
           var oldElm = oldDevcoNode.elm;
           var parentElm = nodeOps.parentNode(oldElm);
 
-
-          console.log("DEVCONODES", devconode)
+          
           // create new node
           createElm(
             devconode,
@@ -4927,6 +4990,106 @@ const createElement = (tag, attrs, children) => {
       invokeInsertHook(devconode, insertedDevcoNodeQueue, isInitialPatch);
       return devconode.elm
     }
+  }
+
+
+  function createComponent (
+    Ctor,
+    data,
+    context,
+    children,
+    tag
+  ) {
+    if (isUndef(Ctor)) {
+      return
+    }
+
+    var baseCtor = context.$options._base;
+
+    // plain options object: turn it into a constructor
+    if (isObject(Ctor)) {
+      Ctor = baseCtor.extend(Ctor);
+    }
+
+    // if at this stage it's not a constructor or an async component factory,
+    // reject.
+    if (typeof Ctor !== 'function') {
+      {
+        warn(("Invalid Component definition: " + (String(Ctor))), context);
+      }
+      return
+    }
+
+    // async component
+    var asyncFactory;
+    if (isUndef(Ctor.cid)) {
+      asyncFactory = Ctor;
+      Ctor = resolveAsyncComponent(asyncFactory, baseCtor);
+      if (Ctor === undefined) {
+        // return a placeholder node for async component, which is rendered
+        // as a comment node but preserves all the raw information for the node.
+        // the information will be used for async server-rendering and hydration.
+        return createAsyncPlaceholder(
+          asyncFactory,
+          data,
+          context,
+          children,
+          tag
+        )
+      }
+    }
+
+    data = data || {};
+
+    // resolve constructor options in case global mixins are applied after
+    // component constructor creation
+    resolveConstructorOptions(Ctor);
+
+    // transform component v-model data into props & events
+    if (isDef(data.model)) {
+      transformModel(Ctor.options, data);
+    }
+
+    // extract props
+    var propsData = extractPropsFromVNodeData(data, Ctor, tag);
+
+    // functional component
+    if (isTrue(Ctor.options.functional)) {
+      return createFunctionalComponent(Ctor, propsData, data, context, children)
+    }
+
+    // extract listeners, since these needs to be treated as
+    // child component listeners instead of DOM listeners
+    var listeners = data.on;
+    // replace with listeners with .native modifier
+    // so it gets processed during parent component patch.
+    data.on = data.nativeOn;
+
+    if (isTrue(Ctor.options.abstract)) {
+      // abstract components do not keep anything
+      // other than props & listeners & slot
+
+      // work around flow
+      var slot = data.slot;
+      data = {};
+      if (slot) {
+        data.slot = slot;
+      }
+    }
+
+    // install component management hooks onto the placeholder node
+    installComponentHooks(data);
+
+    // return a placeholder vnode
+    var name = Ctor.options.name || tag;
+    var vnode = new VNode(
+      ("vue-component-" + (Ctor.cid) + (name ? ("-" + name) : '')),
+      data, undefined, undefined, undefined, context,
+      { Ctor: Ctor, propsData: propsData, listeners: listeners, tag: tag, children: children },
+      asyncFactory
+    );
+
+    return vnode
   }
 
 
@@ -5162,11 +5325,7 @@ const createElement = (tag, attrs, children) => {
       }
     }
   }
-  var baseModules = [
-    ref,
-    directives
-  ];
-
+  var emptyNode = new DevcoNode('', {}, []);
   var directives = {
     create: updateDirectives,
     update: updateDirectives,
@@ -5241,6 +5400,12 @@ const createElement = (tag, attrs, children) => {
       }
     }
   }
+  var baseModules = [
+    ref,
+    directives
+  ];
+
+  
   function updateAttrs (oldDevcoNode, devconode) {
     var opts = devconode.componentOptions;
     if (isDef(opts) && opts.Ctor.options.inheritAttrs === false) {
@@ -5454,17 +5619,173 @@ const createElement = (tag, attrs, children) => {
       }
     }
   }
+  function cached (fn) {
+    var cache = Object.create(null);
+    return (function cachedFn (str) {
+      var hit = cache[str];
+      return hit || (cache[str] = fn(str))
+    })
+  }
+  function resolveTransition (def$$1) {
+    if (!def$$1) {
+      return
+    }
+    /* istanbul ignore else */
+    if (typeof def$$1 === 'object') {
+      var res = {};
+      if (def$$1.css !== false) {
+        extend(res, autoCssTransition(def$$1.name || 'v'));
+      }
+      extend(res, def$$1);
+      return res
+    } else if (typeof def$$1 === 'string') {
+      return autoCssTransition(def$$1)
+    }
+  }
 
+  var autoCssTransition = cached(function (name) {
+    return {
+      enterClass: (name + "-enter"),
+      enterToClass: (name + "-enter-to"),
+      enterActiveClass: (name + "-enter-active"),
+      leaveClass: (name + "-leave"),
+      leaveToClass: (name + "-leave-to"),
+      leaveActiveClass: (name + "-leave-active")
+    }
+  });
+  function leave (vnode, rm) {
+    var el = vnode.elm;
+
+    // call enter callback now
+    if (isDef(el._enterCb)) {
+      el._enterCb.cancelled = true;
+      el._enterCb();
+    }
+
+    var data = resolveTransition(vnode.data.transition);
+    if (isUndef(data) || el.nodeType !== 1) {
+      return rm()
+    }
+
+    /* istanbul ignore if */
+    if (isDef(el._leaveCb)) {
+      return
+    }
+
+    var css = data.css;
+    var type = data.type;
+    var leaveClass = data.leaveClass;
+    var leaveToClass = data.leaveToClass;
+    var leaveActiveClass = data.leaveActiveClass;
+    var beforeLeave = data.beforeLeave;
+    var leave = data.leave;
+    var afterLeave = data.afterLeave;
+    var leaveCancelled = data.leaveCancelled;
+    var delayLeave = data.delayLeave;
+    var duration = data.duration;
+
+    var expectsCSS = css !== false && !isIE9;
+    var userWantsControl = getHookArgumentsLength(leave);
+
+    var explicitLeaveDuration = toNumber(
+      isObject(duration)
+        ? duration.leave
+        : duration
+    );
+
+    if (isDef(explicitLeaveDuration)) {
+      checkDuration(explicitLeaveDuration, 'leave', vnode);
+    }
+
+    var cb = el._leaveCb = once(function () {
+      if (el.parentNode && el.parentNode._pending) {
+        el.parentNode._pending[vnode.key] = null;
+      }
+      if (expectsCSS) {
+        removeTransitionClass(el, leaveToClass);
+        removeTransitionClass(el, leaveActiveClass);
+      }
+      if (cb.cancelled) {
+        if (expectsCSS) {
+          removeTransitionClass(el, leaveClass);
+        }
+        leaveCancelled && leaveCancelled(el);
+      } else {
+        rm();
+        afterLeave && afterLeave(el);
+      }
+      el._leaveCb = null;
+    });
+
+    if (delayLeave) {
+      delayLeave(performLeave);
+    } else {
+      performLeave();
+    }
+
+    function performLeave () {
+      // the delayed leave may have already been cancelled
+      if (cb.cancelled) {
+        return
+      }
+      // record leaving element
+      if (!vnode.data.show && el.parentNode) {
+        (el.parentNode._pending || (el.parentNode._pending = {}))[(vnode.key)] = vnode;
+      }
+      beforeLeave && beforeLeave(el);
+      if (expectsCSS) {
+        addTransitionClass(el, leaveClass);
+        addTransitionClass(el, leaveActiveClass);
+        nextFrame(function () {
+          removeTransitionClass(el, leaveClass);
+          if (!cb.cancelled) {
+            addTransitionClass(el, leaveToClass);
+            if (!userWantsControl) {
+              if (isValidDuration(explicitLeaveDuration)) {
+                setTimeout(cb, explicitLeaveDuration);
+              } else {
+                whenTransitionEnds(el, type, cb);
+              }
+            }
+          }
+        });
+      }
+      leave && leave(el, cb);
+      if (!expectsCSS && !userWantsControl) {
+        cb();
+      }
+    }
+  }
   var style = {
     create: updateStyle,
     update: updateStyle
   };
+  function _enter (_, vnode) {
+    if (vnode.data.show !== true) {
+      enter(vnode);
+    }
+  }
+
+  var transition = inBrowser ? {
+    create: _enter,
+    activate: _enter,
+    remove: function remove$$1 (devconode, rm) {
+      /* istanbul ignore else */
+      if (devconode.data.show !== true) {
+        leave(devconode, rm);
+      } else {
+        rm();
+      }
+    }
+  } : {};
+
   var platformModules = [
     attrs,
     klass,
     events,
     domProps,
-    style
+    style,
+    transition
   ];
 
   /*  */
@@ -5472,7 +5793,6 @@ const createElement = (tag, attrs, children) => {
   // the directive module should be applied last, after all
   // built-in modules have been applied.
   var modules = platformModules.concat(baseModules);
-
   var patch = createPatchFunction({ nodeOps: nodeOps, modules: modules });
 
   function lifecycleMixin (Devco) {
@@ -5486,6 +5806,8 @@ const createElement = (tag, attrs, children) => {
       // based on the rendering backend used.
       if (!prevDevcoNode) {
         // initial render
+
+        // HERE IS PROBLEM. vm.$el has no info
         vm.$el = vm.__patch__(vm.$el, devconode, hydrating, false /* removeOnly */);
         console.log(vm.$el)
       } else {
@@ -5609,11 +5931,12 @@ const createElement = (tag, attrs, children) => {
       var vm = this;
       var ref = vm.$options;
       var render = ref.render;
-      var _parentVnode = ref._parentVnode;
+      console.log('REF', ref._parentDevcoNode)
+      var _parentDevcoNode = ref._parentDevcoNode;
 
-      if (_parentVnode) {
+      if (_parentDevcoNode) {
         vm.$scopedSlots = normalizeScopedSlots(
-          _parentVnode.data.scopedSlots,
+          _parentDevcoNode.data.scopedSlots,
           vm.$slots,
           vm.$scopedSlots
         );
@@ -5621,7 +5944,7 @@ const createElement = (tag, attrs, children) => {
 
       // set parent devconode. this allows render functions to have access
       // to the data on the placeholder node.
-      vm.$devconode = _parentVnode;
+      vm.$devconode = _parentDevcoNode;
       // render self
       var devconode;
       try {
@@ -5630,6 +5953,7 @@ const createElement = (tag, attrs, children) => {
         // when parent component is patched.
         currentRenderingInstance = vm;
         devconode = render.call(vm._renderProxy, vm.$createElement);
+
       } catch (e) {
         handleError(e, vm, "render");
         // return error render result,
@@ -5664,7 +5988,9 @@ const createElement = (tag, attrs, children) => {
         devconode = createEmptyDevcoNode();
       }
       // set parent
-      devconode.parent = _parentVnode;
+      devconode.parent = _parentDevcoNode;
+      
+      console.log("PLIS WORK", devconode)
       return devconode
     };
   }
@@ -5835,7 +6161,6 @@ const createElement = (tag, attrs, children) => {
         // internal component options needs special treatment.
         initInternalComponent(vm, options);
       } else {
-        console.log("CONSTR", vm.constructor)
         vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
       }
 
@@ -6180,7 +6505,6 @@ const createElement = (tag, attrs, children) => {
   lifecycleMixin(Devco);
   renderMixin(Devco);
 
-console.log(Devco.config)
   Devco.config.mustUseProp = mustUseProp;
   // Devco.config.isReservedTag = isReservedTag;
   // Devco.config.isReservedAttr = isReservedAttr;

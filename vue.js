@@ -1530,6 +1530,7 @@
         child = child.options;
       }
   
+      console.log("CHILD",child)
       normalizeProps(child, vm);
       normalizeInject(child, vm);
       normalizeDirectives(child);
@@ -4999,6 +5000,7 @@
           // internal component options needs special treatment.
           initInternalComponent(vm, options);
         } else {
+          console.log('RESOLVE OPTIONS', vm.constructor)
           vm.$options = mergeOptions(
             resolveConstructorOptions(vm.constructor),
             options || {},
@@ -5899,7 +5901,7 @@
   
       var modules = backend.modules;
       var nodeOps = backend.nodeOps;
-  
+      console.log(backend)
       for (i = 0; i < hooks.length; ++i) {
         cbs[hooks[i]] = [];
         for (j = 0; j < modules.length; ++j) {
@@ -8496,7 +8498,6 @@
     // the directive module should be applied last, after all
     // built-in modules have been applied.
     var modules = platformModules.concat(baseModules);
-  
     var patch = createPatchFunction({ nodeOps: nodeOps, modules: modules });
   
     /**
