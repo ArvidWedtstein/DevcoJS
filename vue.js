@@ -5054,6 +5054,7 @@
   
     function resolveConstructorOptions (Ctor) {
       var options = Ctor.options;
+      console.log(options)
       if (Ctor.super) {
         var superOptions = resolveConstructorOptions(Ctor.super);
         var cachedSuperOptions = Ctor.superOptions;
@@ -5073,6 +5074,7 @@
           }
         }
       }
+      console.log('OPTIONS-VUE', options);
       return options
     }
   
@@ -5964,7 +5966,6 @@
           // associated DOM element for it.
           vnode = ownerArray[index] = cloneVNode(vnode);
         }
-  
         vnode.isRootInsert = !nested; // for transition enter check
         if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
           return
@@ -5973,6 +5974,7 @@
         var data = vnode.data;
         var children = vnode.children;
         var tag = vnode.tag;
+
         if (isDef(tag)) {
           {
             if (data && data.pre) {
@@ -6553,7 +6555,7 @@
             // replacing existing element
             var oldElm = oldVnode.elm;
             var parentElm = nodeOps.parentNode(oldElm);
-  
+            
             // create new node
             createElm(
               vnode,

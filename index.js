@@ -129,6 +129,240 @@ const createElement = (tag, attrs, children) => {
   function isUndef (v) {
     return v === undefined || v === null
   }
+
+  var mustUseProp = function (tag, type, attr) {
+    console.log('MUSTUSEPROP', tag, type, attr)
+    return (
+      (attr === 'value' && acceptValue(tag)) && type !== 'button' ||
+      (attr === 'selected' && tag === 'option') ||
+      (attr === 'checked' && tag === 'input') ||
+      (attr === 'muted' && tag === 'video')
+    )
+  };
+
+  function transformNode (el, options) {
+    var warn = options.warn || baseWarn;
+    var staticClass = getAndRemoveAttr(el, 'class');
+    if (staticClass) {
+     
+      var res = parseText(staticClass, options.delimiters);
+      if (res) {
+        warn(
+          "class=\"" + staticClass + "\": " +
+          'Interpolation inside attributes has been removed. ' +
+          'Use v-bind or the colon shorthand instead. For example, ' +
+          'instead of <div class="{{ val }}">, use <div :class="val">.',
+          el.rawAttrsMap['class']
+        );
+      }
+    }
+    if (staticClass) {
+      el.staticClass = JSON.stringify(staticClass);
+    }
+    var classBinding = getBindingAttr(el, 'class', false /* getStatic */);
+    if (classBinding) {
+      el.classBinding = classBinding;
+    }
+  }
+
+  function genData (el) {
+    var data = '';
+    if (el.staticClass) {
+      data += "staticClass:" + (el.staticClass) + ",";
+    }
+    if (el.classBinding) {
+      data += "class:" + (el.classBinding) + ",";
+    }
+    return data
+  }
+
+  var klass$1 = {
+    staticKeys: ['staticClass'],
+    transformNode: transformNode,
+    genData: genData
+  };
+  function transformNode$1 (el, options) {
+    var warn = options.warn || baseWarn;
+    var staticStyle = getAndRemoveAttr(el, 'style');
+    if (staticStyle) {
+      /* istanbul ignore if */
+      {
+          
+        var res = parseText(staticStyle, options.delimiters);
+        if (res) {
+          warn(
+            "style=\"" + staticStyle + "\": " +
+            'Interpolation inside attributes has been removed. ' +
+            'Use v-bind or the colon shorthand instead. For example, ' +
+            'instead of <div style="{{ val }}">, use <div :style="val">.',
+            el.rawAttrsMap['style']
+          );
+        }
+      }
+      el.staticStyle = JSON.stringify(parseStyleText(staticStyle));
+    }
+
+    var styleBinding = getBindingAttr(el, 'style', false /* getStatic */);
+    if (styleBinding) {
+      el.styleBinding = styleBinding;
+    }
+  }
+
+  function genData$1 (el) {
+    var data = '';
+    if (el.staticStyle) {
+      data += "staticStyle:" + (el.staticStyle) + ",";
+    }
+    if (el.styleBinding) {
+      data += "style:(" + (el.styleBinding) + "),";
+    }
+    return data
+  }
+
+  var style$1 = {
+    staticKeys: ['staticStyle'],
+    transformNode: transformNode$1,
+    genData: genData$1
+  };
+  function preTransformNode (el, options) {
+    if (el.tag === 'input') {
+      var map = el.attrsMap;
+      if (!map['v-model']) {
+        return
+      }
+
+      var typeBinding;
+      if (map[':type'] || map['v-bind:type']) {
+        typeBinding = getBindingAttr(el, 'type');
+      }
+      if (!map.type && !typeBinding && map['v-bind']) {
+        typeBinding = "(" + (map['v-bind']) + ").type";
+      }
+
+      if (typeBinding) {
+        var ifCondition = getAndRemoveAttr(el, 'v-if', true);
+        var ifConditionExtra = ifCondition ? ("&&(" + ifCondition + ")") : "";
+        var hasElse = getAndRemoveAttr(el, 'v-else', true) != null;
+        var elseIfCondition = getAndRemoveAttr(el, 'v-else-if', true);
+        // 1. checkbox
+        var branch0 = cloneASTElement(el);
+        // process for on the main node
+        processFor(branch0);
+        addRawAttr(branch0, 'type', 'checkbox');
+        processElement(branch0, options);
+        branch0.processed = true; // prevent it from double-processed
+        branch0.if = "(" + typeBinding + ")==='checkbox'" + ifConditionExtra;
+        addIfCondition(branch0, {
+          exp: branch0.if,
+          block: branch0
+        });
+        // 2. add radio else-if condition
+        var branch1 = cloneASTElement(el);
+        getAndRemoveAttr(branch1, 'v-for', true);
+        addRawAttr(branch1, 'type', 'radio');
+        processElement(branch1, options);
+        addIfCondition(branch0, {
+          exp: "(" + typeBinding + ")==='radio'" + ifConditionExtra,
+          block: branch1
+        });
+        // 3. other
+        var branch2 = cloneASTElement(el);
+        getAndRemoveAttr(branch2, 'v-for', true);
+        addRawAttr(branch2, ':type', typeBinding);
+        processElement(branch2, options);
+        addIfCondition(branch0, {
+          exp: ifCondition,
+          block: branch2
+        });
+
+        if (hasElse) {
+          branch0.else = true;
+        } else if (elseIfCondition) {
+          branch0.elseif = elseIfCondition;
+        }
+
+        return branch0
+      }
+    }
+  }
+
+  function cloneASTElement (el) {
+    return createASTElement(el.tag, el.attrsList.slice(), el.parent)
+  }
+
+  var model$1 = {
+    preTransformNode: preTransformNode
+  };
+
+  function model (el, dir, _warn) {
+    warn$1 = _warn;
+    var value = dir.value;
+    var modifiers = dir.modifiers;
+    var tag = el.tag;
+    var type = el.attrsMap.type;
+
+    {
+      // inputs with type="file" are read only and setting the input's
+      // value will throw an error.
+      if (tag === 'input' && type === 'file') {
+        warn$1(
+          "<" + (el.tag) + " v-model=\"" + value + "\" type=\"file\">:\n" +
+          "File inputs are read only. Use a v-on:change listener instead.",
+          el.rawAttrsMap['v-model']
+        );
+      }
+    }
+
+    if (el.component) {
+      genComponentModel(el, value, modifiers);
+      // component v-model doesn't need extra runtime
+      return false
+    } else if (tag === 'select') {
+      genSelect(el, value, modifiers);
+    } else if (tag === 'input' && type === 'checkbox') {
+      genCheckboxModel(el, value, modifiers);
+    } else if (tag === 'input' && type === 'radio') {
+      genRadioModel(el, value, modifiers);
+    } else if (tag === 'input' || tag === 'textarea') {
+      genDefaultModel(el, value, modifiers);
+    } else if (!config.isReservedTag(tag)) {
+      genComponentModel(el, value, modifiers);
+      // component v-model doesn't need extra runtime
+      return false
+    } else {
+      warn$1(
+        "<" + (el.tag) + " v-model=\"" + value + "\">: " +
+        "v-model is not supported on this element type. " +
+        'If you are working with contenteditable, it\'s recommended to ' +
+        'wrap a library dedicated for that purpose inside a custom component.',
+        el.rawAttrsMap['v-model']
+      );
+    }
+
+    // ensure runtime directive metadata
+    return true
+  }
+  function text (el, dir) {
+    if (dir.value) {
+      addProp(el, 'textContent', ("_s(" + (dir.value) + ")"), dir);
+    }
+  }
+  function html (el, dir) {
+    if (dir.value) {
+      addProp(el, 'innerHTML', ("_s(" + (dir.value) + ")"), dir);
+    }
+  }
+
+  var modules$1 = [
+    klass$1,
+    style$1,
+    model$1
+  ];
+  var directives$1 = {
+    model: model,
+    text: text,
+    html: html
+  };
   /*
   * Query an element selector if it's not an element already.
   */
@@ -267,7 +501,7 @@ const createElement = (tag, attrs, children) => {
 
     return cloned
   }
-
+  Devco.version = '2.6.14';
   var config = ({
 
     optionMergeStrategies: Object.create(null),
@@ -306,6 +540,8 @@ const createElement = (tag, attrs, children) => {
     parsePlatformTagName: identity,
 
     keyCodes: Object.create(null),
+
+    _lifecycleHooks: LIFECYCLE_HOOKS
   });
   
   const extend = (to, _from) => {
@@ -1675,8 +1911,9 @@ const createElement = (tag, attrs, children) => {
    * This function is used because child instances need access
    * to assets defined in its ancestor chain.
    */
-   function resolveConstructorOptions (Ctor) {
+  function resolveConstructorOptions (Ctor) {
     var options = Ctor.options;
+    console.log('Ctor', options);
     if (Ctor.super) {
       var superOptions = resolveConstructorOptions(Ctor.super);
       var cachedSuperOptions = Ctor.superOptions;
@@ -1696,6 +1933,7 @@ const createElement = (tag, attrs, children) => {
         }
       }
     }
+    console.log('OPTIONS', options);
     return options
   }
   /* not type checking this file because flow doesn't play well with Proxy */
@@ -1870,7 +2108,7 @@ const createElement = (tag, attrs, children) => {
       if (data && data.attrs && data.attrs.slot) {
         delete data.attrs.slot;
       }
-      // named slots should only be respected if the vnode was rendered in the
+      // named slots should only be respected if the devconode was rendered in the
       // same context.
       if ((child.context === context || child.fnContext === context) &&
         data && data.slot != null
@@ -3968,17 +4206,12 @@ const createElement = (tag, attrs, children) => {
 
     for (i = 0; i < hooks.length; ++i) {
       cbs[hooks[i]] = [];
-      if (modules) {
-        for (j = 0; j < modules.length; ++j) {
-          if (modules[j]) {
-            if (isDef(modules[j][hooks[i]])) {
-              cbs[hooks[i]].push(modules[j][hooks[i]]);
-            }
-          }
+      for (j = 0; j < modules.length; ++j) {
+        if (isDef(modules[j][hooks[i]])) {
+          cbs[hooks[i]].push(modules[j][hooks[i]]);
         }
       }
     }
-
     function emptyNodeAt (elm) {
       return new DevcoNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
     }
@@ -4017,40 +4250,33 @@ const createElement = (tag, attrs, children) => {
       )
     }
 
-    var creatingElmInVPre = 0;
+    var creatingElmInDevcoPre = 0;
 
-    function createElm (
-      devconode,
-      insertedVnodeQueue,
-      parentElm,
-      refElm,
-      nested,
-      ownerArray,
-      index
-    ) {
+    function createElm (devconode, insertedDevcoNodeQueue, parentElm, refElm, nested, ownerArray, index) {
       if (isDef(devconode.elm) && isDef(ownerArray)) {
         // This devconode was used in a previous render!
         // now it's used as a new node, overwriting its elm would cause
         // potential patch errors down the road when it's used as an insertion
         // reference node. Instead, we clone the node on-demand before creating
         // associated DOM element for it.
-        devconode = ownerArray[index] = cloneVNode(devconode);
+        devconode = ownerArray[index] = cloneDevcoNode(devconode);
       }
-
+      console.log("DEVCO",devconode)
       devconode.isRootInsert = !nested; // for transition enter check
-      if (createComponent(devconode, insertedVnodeQueue, parentElm, refElm)) {
+      if (createComponent(devconode, insertedDevcoNodeQueue, parentElm, refElm)) {
         return
       }
 
+      
       var data = devconode.data;
       var children = devconode.children;
       var tag = devconode.tag;
       if (isDef(tag)) {
         {
           if (data && data.pre) {
-            creatingElmInVPre++;
+            creatingElmInDevcoPre++;
           }
-          if (isUnknownElement$$1(devconode, creatingElmInVPre)) {
+          if (isUnknownElement$$1(devconode, creatingElmInDevcoPre)) {
             warn(
               'Unknown custom element: <' + tag + '> - did you ' +
               'register the component correctly? For recursive components, ' +
@@ -4065,43 +4291,46 @@ const createElement = (tag, attrs, children) => {
           : nodeOps.createElement(tag, devconode);
         setScope(devconode);
 
-        /* istanbul ignore if */
         {
-          createChildren(devconode, children, insertedVnodeQueue);
+          createChildren(devconode, children, insertedDevcoNodeQueue);
           if (isDef(data)) {
-            invokeCreateHooks(devconode, insertedVnodeQueue);
+            invokeCreateHooks(devconode, insertedDevcoNodeQueue);
           }
           insert(parentElm, devconode.elm, refElm);
         }
 
         if (data && data.pre) {
-          creatingElmInVPre--;
+          creatingElmInDevcoPre--;
         }
       } else if (isTrue(devconode.isComment)) {
+        console.log('ISTRUEW')
+        console.log(devconode.elm)
         devconode.elm = nodeOps.createComment(devconode.text);
         insert(parentElm, devconode.elm, refElm);
       } else {
+        console.log("VNODE", devconode)
         devconode.elm = nodeOps.createTextNode(devconode.text);
         insert(parentElm, devconode.elm, refElm);
       }
     }
 
-    function createComponent (devconode, insertedVnodeQueue, parentElm, refElm) {
-      var i = devconode.data;
+    function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
+      console.log(vnode)
+      var i = vnode.data;
       if (isDef(i)) {
-        var isReactivated = isDef(devconode.componentInstance) && i.keepAlive;
+        var isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
         if (isDef(i = i.hook) && isDef(i = i.init)) {
-          i(devconode, false /* hydrating */);
+          i(vnode, false /* hydrating */);
         }
-        // after calling the init hook, if the devconode is a child component
+        // after calling the init hook, if the vnode is a child component
         // it should've created a child instance and mounted it. the child
-        // component also has set the placeholder devconode's elm.
+        // component also has set the placeholder vnode's elm.
         // in that case we can just return the element and be done.
-        if (isDef(devconode.componentInstance)) {
-          initComponent(devconode, insertedVnodeQueue);
-          insert(parentElm, devconode.elm, refElm);
+        if (isDef(vnode.componentInstance)) {
+          initComponent(vnode, insertedVnodeQueue);
+          insert(parentElm, vnode.elm, refElm);
           if (isTrue(isReactivated)) {
-            reactivateComponent(devconode, insertedVnodeQueue, parentElm, refElm);
+            reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm);
           }
           return true
         }
@@ -4160,13 +4389,14 @@ const createElement = (tag, attrs, children) => {
       }
     }
 
-    function createChildren (devconode, children, insertedVnodeQueue) {
+    function createChildren (devconode, children, insertedDevcoNodeQueue) {
       if (Array.isArray(children)) {
         {
           checkDuplicateKeys(children);
         }
         for (var i = 0; i < children.length; ++i) {
-          createElm(children[i], insertedVnodeQueue, devconode.elm, null, true, children, i);
+          
+          createElm(children[i], insertedDevcoNodeQueue, devconode.elm, null, true, children, i);
         }
       } else if (isPrimitive(devconode.text)) {
         nodeOps.appendChild(devconode.elm, nodeOps.createTextNode(String(devconode.text)));
@@ -4180,14 +4410,14 @@ const createElement = (tag, attrs, children) => {
       return isDef(devconode.tag)
     }
 
-    function invokeCreateHooks (devconode, insertedVnodeQueue) {
+    function invokeCreateHooks (devconode, insertedDevcoNodeQueue) {
       for (var i$1 = 0; i$1 < cbs.create.length; ++i$1) {
         cbs.create[i$1](emptyNode, devconode);
       }
       i = devconode.data.hook; // Reuse variable
       if (isDef(i)) {
         if (isDef(i.create)) { i.create(emptyNode, devconode); }
-        if (isDef(i.insert)) { insertedVnodeQueue.push(devconode); }
+        if (isDef(i.insert)) { insertedDevcoNodeQueue.push(devconode); }
       }
     }
 
@@ -4216,10 +4446,9 @@ const createElement = (tag, attrs, children) => {
         nodeOps.setStyleScope(devconode.elm, i);
       }
     }
-
-    function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx, insertedVnodeQueue) {
+    function addDevcoNodes (parentElm, refElm, devconodes, startIdx, endIdx, insertedDevcoNodeQueue) {
       for (; startIdx <= endIdx; ++startIdx) {
-        createElm(vnodes[startIdx], insertedVnodeQueue, parentElm, refElm, false, vnodes, startIdx);
+        createElm(devconodes[startIdx], insertedDevcoNodeQueue, parentElm, refElm, false, devconodes, startIdx);
       }
     }
 
@@ -4237,9 +4466,9 @@ const createElement = (tag, attrs, children) => {
       }
     }
 
-    function removeVnodes (vnodes, startIdx, endIdx) {
+    function removeDevcoNodes (devconodes, startIdx, endIdx) {
       for (; startIdx <= endIdx; ++startIdx) {
-        var ch = vnodes[startIdx];
+        var ch = devconodes[startIdx];
         if (isDef(ch)) {
           if (isDef(ch.tag)) {
             removeAndInvokeRemoveHook(ch);
@@ -4279,7 +4508,6 @@ const createElement = (tag, attrs, children) => {
         removeNode(devconode.elm);
       }
     }
-
     function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
       var oldStartIdx = 0;
       var newStartIdx = 0;
@@ -4329,6 +4557,7 @@ const createElement = (tag, attrs, children) => {
             ? oldKeyToIdx[newStartVnode.key]
             : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
           if (isUndef(idxInOld)) { // New element
+            
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx);
           } else {
             vnodeToMove = oldCh[idxInOld];
@@ -4338,6 +4567,7 @@ const createElement = (tag, attrs, children) => {
               canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm);
             } else {
               // same key but different element. treat as new element
+              
               createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx);
             }
           }
@@ -4377,15 +4607,15 @@ const createElement = (tag, attrs, children) => {
       }
     }
 
-    function patchVnode (
-      oldVnode,
+    function patchDevcoNode (
+      oldDevcoNode,
       devconode,
       insertedVnodeQueue,
       ownerArray,
       index,
       removeOnly
     ) {
-      if (oldVnode === devconode) {
+      if (oldDevcoNode === devconode) {
         return
       }
 
@@ -4394,11 +4624,11 @@ const createElement = (tag, attrs, children) => {
         devconode = ownerArray[index] = cloneVNode(devconode);
       }
 
-      var elm = devconode.elm = oldVnode.elm;
+      var elm = devconode.elm = oldDevcoNode.elm;
 
-      if (isTrue(oldVnode.isAsyncPlaceholder)) {
+      if (isTrue(oldDevcoNode.isAsyncPlaceholder)) {
         if (isDef(devconode.asyncFactory.resolved)) {
-          hydrate(oldVnode.elm, devconode, insertedVnodeQueue);
+          hydrate(oldDevcoNode.elm, devconode, insertedVnodeQueue);
         } else {
           devconode.isAsyncPlaceholder = true;
         }
@@ -4410,25 +4640,25 @@ const createElement = (tag, attrs, children) => {
       // if the new node is not cloned it means the render functions have been
       // reset by the hot-reload-api and we need to do a proper re-render.
       if (isTrue(devconode.isStatic) &&
-        isTrue(oldVnode.isStatic) &&
-        devconode.key === oldVnode.key &&
+        isTrue(oldDevcoNode.isStatic) &&
+        devconode.key === oldDevcoNode.key &&
         (isTrue(devconode.isCloned) || isTrue(devconode.isOnce))
       ) {
-        devconode.componentInstance = oldVnode.componentInstance;
+        devconode.componentInstance = oldDevcoNode.componentInstance;
         return
       }
 
       var i;
       var data = devconode.data;
       if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-        i(oldVnode, devconode);
+        i(oldDevcoNode, devconode);
       }
 
-      var oldCh = oldVnode.children;
+      var oldCh = oldDevcoNode.children;
       var ch = devconode.children;
       if (isDef(data) && isPatchable(devconode)) {
-        for (i = 0; i < cbs.update.length; ++i) { cbs.update[i](oldVnode, devconode); }
-        if (isDef(i = data.hook) && isDef(i = i.update)) { i(oldVnode, devconode); }
+        for (i = 0; i < cbs.update.length; ++i) { cbs.update[i](oldDevcoNode, devconode); }
+        if (isDef(i = data.hook) && isDef(i = i.update)) { i(oldDevcoNode, devconode); }
       }
       if (isUndef(devconode.text)) {
         if (isDef(oldCh) && isDef(ch)) {
@@ -4437,21 +4667,36 @@ const createElement = (tag, attrs, children) => {
           {
             checkDuplicateKeys(ch);
           }
-          if (isDef(oldVnode.text)) { nodeOps.setTextContent(elm, ''); }
-          addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
+          if (isDef(oldDevcoNode.text)) { nodeOps.setTextContent(elm, ''); }
+          addDevcoNodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
         } else if (isDef(oldCh)) {
-          removeVnodes(oldCh, 0, oldCh.length - 1);
-        } else if (isDef(oldVnode.text)) {
+          removeDevcoNodes(oldCh, 0, oldCh.length - 1);
+        } else if (isDef(oldDevcoNode.text)) {
           nodeOps.setTextContent(elm, '');
         }
-      } else if (oldVnode.text !== devconode.text) {
+      } else if (oldDevcoNode.text !== devconode.text) {
         nodeOps.setTextContent(elm, devconode.text);
       }
       if (isDef(data)) {
-        if (isDef(i = data.hook) && isDef(i = i.postpatch)) { i(oldVnode, devconode); }
+        if (isDef(i = data.hook) && isDef(i = i.postpatch)) { i(oldDevcoNode, devconode); }
       }
     }
-
+    function sameVnode (a, b) {
+      return (
+        a.key === b.key &&
+        a.asyncFactory === b.asyncFactory && (
+          (
+            a.tag === b.tag &&
+            a.isComment === b.isComment &&
+            isDef(a.data) === isDef(b.data) &&
+            sameInputType(a, b)
+          ) || (
+            isTrue(a.isAsyncPlaceholder) &&
+            isUndef(b.asyncFactory.error)
+          )
+        )
+      )
+    }
     function invokeInsertHook (devconode, queue, initial) {
       // delay insert hooks for component root nodes, invoke them after the
       // element is really inserted
@@ -4576,37 +4821,38 @@ const createElement = (tag, attrs, children) => {
       }
     }
 
-    return function patch (oldVnode, devconode, hydrating, removeOnly) {
+    return function patch (oldDevcoNode, devconode, hydrating, removeOnly) {
       if (isUndef(devconode)) {
-        if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
+        if (isDef(oldDevcoNode)) { invokeDestroyHook(oldDevcoNode); }
         return
       }
 
       var isInitialPatch = false;
-      var insertedVnodeQueue = [];
+      var insertedDevcoNodeQueue = [];
 
-      if (isUndef(oldVnode)) {
+      if (isUndef(oldDevcoNode)) {
         // empty mount (likely as component), create new root element
         isInitialPatch = true;
-        createElm(devconode, insertedVnodeQueue);
+        
+        createElm(devconode, insertedDevcoNodeQueue);
       } else {
-        var isRealElement = isDef(oldVnode.nodeType);
-        if (!isRealElement && sameVnode(oldVnode, devconode)) {
+        var isRealElement = isDef(oldDevcoNode.nodeType);
+        if (!isRealElement && sameVnode(oldDevcoNode, devconode)) {
           // patch existing root node
-          patchVnode(oldVnode, devconode, insertedVnodeQueue, null, null, removeOnly);
+          patchDevcoNode(oldDevcoNode, devconode, insertedDevcoNodeQueue, null, null, removeOnly);
         } else {
           if (isRealElement) {
             // mounting to a real element
             // check if this is server-rendered content and if we can perform
             // a successful hydration.
-            // if (oldVnode.nodeType === 1 && oldVnode.hasAttribute(SSR_ATTR)) {
-            //   oldVnode.removeAttribute(SSR_ATTR);
+            // if (oldDevcoNode.nodeType === 1 && oldDevcoNode.hasAttribute(SSR_ATTR)) {
+            //   oldDevcoNode.removeAttribute(SSR_ATTR);
             //   hydrating = true;
             // }
             if (isTrue(hydrating)) {
-              if (hydrate(oldVnode, devconode, insertedVnodeQueue)) {
-                invokeInsertHook(devconode, insertedVnodeQueue, true);
-                return oldVnode
+              if (hydrate(oldDevcoNode, devconode, insertedDevcoNodeQueue)) {
+                invokeInsertHook(devconode, insertedDevcoNodeQueue, true);
+                return oldDevcoNode
               } else {
                 warn(
                   'The client-side rendered virtual DOM tree is not matching ' +
@@ -4619,17 +4865,19 @@ const createElement = (tag, attrs, children) => {
             }
             // either not server-rendered, or hydration failed.
             // create an empty node and replace it
-            oldVnode = emptyNodeAt(oldVnode);
+            oldDevcoNode = emptyNodeAt(oldDevcoNode);
           }
 
           // replacing existing element
-          var oldElm = oldVnode.elm;
+          var oldElm = oldDevcoNode.elm;
           var parentElm = nodeOps.parentNode(oldElm);
 
+
+          console.log("DEVCONODES", devconode)
           // create new node
           createElm(
             devconode,
-            insertedVnodeQueue,
+            insertedDevcoNodeQueue,
             // extremely rare edge case: do not insert if old element is in a
             // leaving transition. Only happens when combining transition +
             // keep-alive + HOCs. (#4590)
@@ -4666,17 +4914,17 @@ const createElement = (tag, attrs, children) => {
               ancestor = ancestor.parent;
             }
           }
-
+          
           // destroy old node
           if (isDef(parentElm)) {
-            removeVnodes([oldVnode], 0, 0);
-          } else if (isDef(oldVnode.tag)) {
-            invokeDestroyHook(oldVnode);
+            removeDevcoNodes([oldDevcoNode], 0, 0);
+          } else if (isDef(oldDevcoNode.tag)) {
+            invokeDestroyHook(oldDevcoNode);
           }
         }
       }
 
-      invokeInsertHook(devconode, insertedVnodeQueue, isInitialPatch);
+      invokeInsertHook(devconode, insertedDevcoNodeQueue, isInitialPatch);
       return devconode.elm
     }
   }
@@ -4873,30 +5121,71 @@ const createElement = (tag, attrs, children) => {
     vm._isBeingDestroyed = false;
   }
 
+  var ref = {
+    create: function create (_, vnode) {
+      registerRef(vnode);
+    },
+    update: function update (oldVnode, vnode) {
+      if (oldVnode.data.ref !== vnode.data.ref) {
+        registerRef(oldVnode, true);
+        registerRef(vnode);
+      }
+    },
+    destroy: function destroy (vnode) {
+      registerRef(vnode, true);
+    }
+  };
+
+  function registerRef (vnode, isRemoval) {
+    var key = vnode.data.ref;
+    if (!isDef(key)) { return }
+
+    var vm = vnode.context;
+    var ref = vnode.componentInstance || vnode.elm;
+    var refs = vm.$refs;
+    if (isRemoval) {
+      if (Array.isArray(refs[key])) {
+        remove(refs[key], ref);
+      } else if (refs[key] === ref) {
+        refs[key] = undefined;
+      }
+    } else {
+      if (vnode.data.refInFor) {
+        if (!Array.isArray(refs[key])) {
+          refs[key] = [ref];
+        } else if (refs[key].indexOf(ref) < 0) {
+          // $flow-disable-line
+          refs[key].push(ref);
+        }
+      } else {
+        refs[key] = ref;
+      }
+    }
+  }
   var baseModules = [
-    // ref,
+    ref,
     directives
   ];
 
   var directives = {
     create: updateDirectives,
     update: updateDirectives,
-    destroy: function unbindDirectives (vnode) {
-      updateDirectives(vnode, emptyNode);
+    destroy: function unbindDirectives (devconode) {
+      updateDirectives(devconode, emptyNode);
     }
   };
 
-  function updateDirectives (oldVnode, vnode) {
-    if (oldVnode.data.directives || vnode.data.directives) {
-      _update(oldVnode, vnode);
+  function updateDirectives (oldDevcoNode, devconode) {
+    if (oldDevcoNode.data.directives || devconode.data.directives) {
+      _update(oldDevcoNode, devconode);
     }
   }
 
-  function _update (oldVnode, vnode) {
-    var isCreate = oldVnode === emptyNode;
-    var isDestroy = vnode === emptyNode;
-    var oldDirs = normalizeDirectives$1(oldVnode.data.directives, oldVnode.context);
-    var newDirs = normalizeDirectives$1(vnode.data.directives, vnode.context);
+  function _update (oldDevcoNode, devconode) {
+    var isCreate = oldDevcoNode === emptyNode;
+    var isDestroy = devconode === emptyNode;
+    var oldDirs = normalizeDirectives$1(oldDevcoNode.data.directives, oldDevcoNode.context);
+    var newDirs = normalizeDirectives$1(devconode.data.directives, devconode.context);
 
     var dirsWithInsert = [];
     var dirsWithPostpatch = [];
@@ -4907,7 +5196,7 @@ const createElement = (tag, attrs, children) => {
       dir = newDirs[key];
       if (!oldDir) {
         // new directive, bind
-        callHook$1(dir, 'bind', vnode, oldVnode);
+        callHook$1(dir, 'bind', devconode, oldDevcoNode);
         if (dir.def && dir.def.inserted) {
           dirsWithInsert.push(dir);
         }
@@ -4915,7 +5204,7 @@ const createElement = (tag, attrs, children) => {
         // existing directive, update
         dir.oldValue = oldDir.value;
         dir.oldArg = oldDir.arg;
-        callHook$1(dir, 'update', vnode, oldVnode);
+        callHook$1(dir, 'update', devconode, oldDevcoNode);
         if (dir.def && dir.def.componentUpdated) {
           dirsWithPostpatch.push(dir);
         }
@@ -4925,20 +5214,20 @@ const createElement = (tag, attrs, children) => {
     if (dirsWithInsert.length) {
       var callInsert = function () {
         for (var i = 0; i < dirsWithInsert.length; i++) {
-          callHook$1(dirsWithInsert[i], 'inserted', vnode, oldVnode);
+          callHook$1(dirsWithInsert[i], 'inserted', devconode, oldDevcoNode);
         }
       };
       if (isCreate) {
-        mergeVNodeHook(vnode, 'insert', callInsert);
+        mergeVNodeHook(devconode, 'insert', callInsert);
       } else {
         callInsert();
       }
     }
 
     if (dirsWithPostpatch.length) {
-      mergeVNodeHook(vnode, 'postpatch', function () {
+      mergeVNodeHook(devconode, 'postpatch', function () {
         for (var i = 0; i < dirsWithPostpatch.length; i++) {
-          callHook$1(dirsWithPostpatch[i], 'componentUpdated', vnode, oldVnode);
+          callHook$1(dirsWithPostpatch[i], 'componentUpdated', devconode, oldDevcoNode);
         }
       });
     }
@@ -4947,33 +5236,33 @@ const createElement = (tag, attrs, children) => {
       for (key in oldDirs) {
         if (!newDirs[key]) {
           // no longer present, unbind
-          callHook$1(oldDirs[key], 'unbind', oldVnode, oldVnode, isDestroy);
+          callHook$1(oldDirs[key], 'unbind', oldDevcoNode, oldDevcoNode, isDestroy);
         }
       }
     }
   }
-  function updateAttrs (oldVnode, vnode) {
-    var opts = vnode.componentOptions;
+  function updateAttrs (oldDevcoNode, devconode) {
+    var opts = devconode.componentOptions;
     if (isDef(opts) && opts.Ctor.options.inheritAttrs === false) {
       return
     }
-    if (isUndef(oldVnode.data.attrs) && isUndef(vnode.data.attrs)) {
+    if (isUndef(oldDevcoNode.data.attrs) && isUndef(devconode.data.attrs)) {
       return
     }
     var key, cur, old;
-    var elm = vnode.elm;
-    var oldAttrs = oldVnode.data.attrs || {};
-    var attrs = vnode.data.attrs || {};
+    var elm = devconode.elm;
+    var oldAttrs = oldDevcoNode.data.attrs || {};
+    var attrs = devconode.data.attrs || {};
     // clone observed objects, as the user probably wants to mutate it
     if (isDef(attrs.__ob__)) {
-      attrs = vnode.data.attrs = extend({}, attrs);
+      attrs = devconode.data.attrs = extend({}, attrs);
     }
 
     for (key in attrs) {
       cur = attrs[key];
       old = oldAttrs[key];
       if (old !== cur) {
-        setAttr(elm, key, cur, vnode.data.pre);
+        setAttr(elm, key, cur, devconode.data.pre);
       }
     }
     // #4391: in IE9, setting type can reset value for input[type=radio]
@@ -4996,10 +5285,10 @@ const createElement = (tag, attrs, children) => {
     create: updateAttrs,
     update: updateAttrs
   };
-  function updateClass (oldVnode, vnode) {
-    var el = vnode.elm;
-    var data = vnode.data;
-    var oldData = oldVnode.data;
+  function updateClass (oldDevcoNode, devconode) {
+    var el = devconode.elm;
+    var data = devconode.data;
+    var oldData = oldDevcoNode.data;
     if (
       isUndef(data.staticClass) &&
       isUndef(data.class) && (
@@ -5012,7 +5301,7 @@ const createElement = (tag, attrs, children) => {
       return
     }
 
-    var cls = genClassForVnode(vnode);
+    var cls = genClassForVnode(devconode);
 
     // handle transition classes
     var transitionClass = el._transitionClasses;
@@ -5030,15 +5319,15 @@ const createElement = (tag, attrs, children) => {
     create: updateClass,
     update: updateClass
   };
-  function updateDOMListeners (oldVnode, vnode) {
-    if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
+  function updateDOMListeners (oldDevcoNode, devconode) {
+    if (isUndef(oldDevcoNode.data.on) && isUndef(devconode.data.on)) {
       return
     }
-    var on = vnode.data.on || {};
-    var oldOn = oldVnode.data.on || {};
-    target$1 = vnode.elm;
+    var on = devconode.data.on || {};
+    var oldOn = oldDevcoNode.data.on || {};
+    target$1 = devconode.elm;
     normalizeEvents(on);
-    updateListeners(on, oldOn, add$1, remove$2, createOnceHandler$1, vnode.context);
+    updateListeners(on, oldOn, add$1, remove$2, createOnceHandler$1, devconode.context);
     target$1 = undefined;
   }
 
@@ -5049,17 +5338,17 @@ const createElement = (tag, attrs, children) => {
 
   var svgContainer;
   
-  function updateDOMProps (oldVnode, vnode) {
-    if (isUndef(oldVnode.data.domProps) && isUndef(vnode.data.domProps)) {
+  function updateDOMProps (oldDevcoNode, devconode) {
+    if (isUndef(oldDevcoNode.data.domProps) && isUndef(devconode.data.domProps)) {
       return
     }
     var key, cur;
-    var elm = vnode.elm;
-    var oldProps = oldVnode.data.domProps || {};
-    var props = vnode.data.domProps || {};
+    var elm = devconode.elm;
+    var oldProps = oldDevcoNode.data.domProps || {};
+    var props = devconode.data.domProps || {};
     // clone observed objects, as the user probably wants to mutate it
     if (isDef(props.__ob__)) {
-      props = vnode.data.domProps = extend({}, props);
+      props = devconode.data.domProps = extend({}, props);
     }
 
     for (key in oldProps) {
@@ -5074,7 +5363,7 @@ const createElement = (tag, attrs, children) => {
       // as these will throw away existing DOM nodes and cause removal errors
       // on subsequent patches (#3360)
       if (key === 'textContent' || key === 'innerHTML') {
-        if (vnode.children) { vnode.children.length = 0; }
+        if (devconode.children) { devconode.children.length = 0; }
         if (cur === oldProps[key]) { continue }
         // #6601 work around Chrome version <= 55 bug where single textNode
         // replaced by innerHTML/textContent retains its parentNode property
@@ -5123,9 +5412,9 @@ const createElement = (tag, attrs, children) => {
     update: updateDOMProps
   };
 
-  function updateStyle (oldVnode, vnode) {
-    var data = vnode.data;
-    var oldData = oldVnode.data;
+  function updateStyle (oldDevcoNode, devconode) {
+    var data = devconode.data;
+    var oldData = oldDevcoNode.data;
 
     if (isUndef(data.staticStyle) && isUndef(data.style) &&
       isUndef(oldData.staticStyle) && isUndef(oldData.style)
@@ -5134,23 +5423,23 @@ const createElement = (tag, attrs, children) => {
     }
 
     var cur, name;
-    var el = vnode.elm;
+    var el = devconode.elm;
     var oldStaticStyle = oldData.staticStyle;
     var oldStyleBinding = oldData.normalizedStyle || oldData.style || {};
 
     // if static style exists, stylebinding already merged into it when doing normalizeStyleData
     var oldStyle = oldStaticStyle || oldStyleBinding;
 
-    var style = normalizeStyleBinding(vnode.data.style) || {};
+    var style = normalizeStyleBinding(devconode.data.style) || {};
 
     // store normalized style under a different key for next diff
     // make sure to clone it if it's reactive, since the user likely wants
     // to mutate it.
-    vnode.data.normalizedStyle = isDef(style.__ob__)
+    devconode.data.normalizedStyle = isDef(style.__ob__)
       ? extend({}, style)
       : style;
 
-    var newStyle = getStyle(vnode, true);
+    var newStyle = getStyle(devconode, true);
 
     for (name in oldStyle) {
       if (isUndef(newStyle[name])) {
@@ -5330,53 +5619,53 @@ const createElement = (tag, attrs, children) => {
         );
       }
 
-      // set parent vnode. this allows render functions to have access
+      // set parent devconode. this allows render functions to have access
       // to the data on the placeholder node.
-      vm.$vnode = _parentVnode;
+      vm.$devconode = _parentVnode;
       // render self
-      var vnode;
+      var devconode;
       try {
         // There's no need to maintain a stack because all render fns are called
         // separately from one another. Nested component's render fns are called
         // when parent component is patched.
         currentRenderingInstance = vm;
-        vnode = render.call(vm._renderProxy, vm.$createElement);
+        devconode = render.call(vm._renderProxy, vm.$createElement);
       } catch (e) {
         handleError(e, vm, "render");
         // return error render result,
-        // or previous vnode to prevent render error causing blank component
+        // or previous devconode to prevent render error causing blank component
         /* istanbul ignore else */
         if (vm.$options.renderError) {
           try {
-            vnode = vm.$options.renderError.call(vm._renderProxy, vm.$createElement, e);
+            devconode = vm.$options.renderError.call(vm._renderProxy, vm.$createElement, e);
           } catch (e) {
             handleError(e, vm, "renderError");
-            vnode = vm._vnode;
+            devconode = vm._vnode;
           }
         } else {
-          vnode = vm._vnode;
+          devconode = vm._vnode;
         }
       } finally {
         currentRenderingInstance = null;
       }
       // if the returned array contains only a single node, allow it
-      if (Array.isArray(vnode) && vnode.length === 1) {
-        vnode = vnode[0];
+      if (Array.isArray(devconode) && devconode.length === 1) {
+        devconode = devconode[0];
       }
-      // return empty vnode in case the render function errored out
-      if (!(vnode instanceof DevcoNode)) {
-        if (Array.isArray(vnode)) {
+      // return empty devconode in case the render function errored out
+      if (!(devconode instanceof DevcoNode)) {
+        if (Array.isArray(devconode)) {
           warn(
             'Multiple root nodes returned from render function. Render function ' +
             'should return a single root node.',
             vm
           );
         }
-        vnode = createEmptyDevcoNode();
+        devconode = createEmptyDevcoNode();
       }
       // set parent
-      vnode.parent = _parentVnode;
-      return vnode
+      devconode.parent = _parentVnode;
+      return devconode
     };
   }
   function eventsMixin (Devco) {
@@ -5546,7 +5835,7 @@ const createElement = (tag, attrs, children) => {
         // internal component options needs special treatment.
         initInternalComponent(vm, options);
       } else {
-        console.log(resolveConstructorOptions(vm.constructor))
+        console.log("CONSTR", vm.constructor)
         vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
       }
 
@@ -5570,63 +5859,63 @@ const createElement = (tag, attrs, children) => {
     };
   }
   function init (Devco) {
-    Devco.prototype._init = function (options) {
-      var vm = this;
+    // Devco.prototype._init = function (options) {
+    //   var vm = this;
       
 
-      vm._self = vm;
-      vm._uid = uid++;
+    //   vm._self = vm;
+    //   vm._uid = uid++;
   
-      var startTag, endTag;
+    //   var startTag, endTag;
 
-      if (config.performance && mark) {
-        startTag = "devco-perf-start:" + (vm._uid);
-        endTag = "devco-perf-end:" + (vm._uid);
-        mark(startTag);
-      }
+    //   if (config.performance && mark) {
+    //     startTag = "devco-perf-start:" + (vm._uid);
+    //     endTag = "devco-perf-end:" + (vm._uid);
+    //     mark(startTag);
+    //   }
 
-      vm._isDevco = true;
+    //   vm._isDevco = true;
 
 
-      Devco.options = Object.create(null);
+    //   Devco.options = Object.create(null);
 
-      Devco.options._base = Devco;
-      Devco.options.components = Object.create(null)
+    //   Devco.options._base = Devco;
+    //   Devco.options.components = Object.create(null)
 
-      extend(Devco.options.components, builtInComponents);
+    //   extend(Devco.options.components, builtInComponents);
 
-      if (options && options._isComponent) {
-        // optimize internal component instantiation
-        // since dynamic options merging is pretty slow, and none of the
-        // internal component options needs special treatment.
-        initInternalComponent(vm, options);
-      } else {
-        vm.$options = mergeOptions(
-          resolveConstructorOptions(vm.constructor),
-          options || {},
-          vm
-        );
-      }
+    //   if (options && options._isComponent) {
+    //     // optimize internal component instantiation
+    //     // since dynamic options merging is pretty slow, and none of the
+    //     // internal component options needs special treatment.
+    //     initInternalComponent(vm, options);
+    //   } else {
+    //     vm.$options = mergeOptions(
+    //       resolveConstructorOptions(vm.constructor),
+    //       options || {},
+    //       vm
+    //     );
+    //   }
 
-      {
-        initProxy(vm);
-      }
-      // expose real self
-      vm._self = vm;
-      initLifecycle(vm);
-      initEvents(vm);
-      initRender(vm);
-      callHook(vm, 'beforeCreate');
-      initInjections(vm); // resolve injections before data/props
-      initState(vm);
-      initProvide(vm); // resolve provide after data/props
-      callHook(vm, 'created');
+    //   {
+    //     initProxy(vm);
+    //   }
+    //   // expose real self
+    //   vm._self = vm;
+    //   initLifecycle(vm);
+    //   initEvents(vm);
+    //   initRender(vm);
+    //   callHook(vm, 'beforeCreate');
+    //   initInjections(vm); // resolve injections before data/props
+    //   initState(vm);
+    //   initProvide(vm); // resolve provide after data/props
+    //   callHook(vm, 'created');
 
-      if (vm.$options.el) {
-        vm.$mount(vm.$options.el);
-      }
-    };
-    Devco.prototype.__patch__ = inBrowser ? patch : noop;
+    //   if (vm.$options.el) {
+    //     vm.$mount(vm.$options.el);
+    //   }
+    // };
+    
     Devco.prototype._render = function () {
       var vm = this;
       var ref = vm.$options;
@@ -5690,6 +5979,167 @@ const createElement = (tag, attrs, children) => {
       return devconode
     };
   }
+  var directive = {
+    inserted: function inserted (el, binding, vnode, oldVnode) {
+      if (vnode.tag === 'select') {
+        // #6903
+        if (oldVnode.elm && !oldVnode.elm._vOptions) {
+          mergeVNodeHook(vnode, 'postpatch', function () {
+            directive.componentUpdated(el, binding, vnode);
+          });
+        } else {
+          setSelected(el, binding, vnode.context);
+        }
+        el._vOptions = [].map.call(el.options, getValue);
+      } else if (vnode.tag === 'textarea' || isTextInputType(el.type)) {
+        el._vModifiers = binding.modifiers;
+        if (!binding.modifiers.lazy) {
+          el.addEventListener('compositionstart', onCompositionStart);
+          el.addEventListener('compositionend', onCompositionEnd);
+          // Safari < 10.2 & UIWebView doesn't fire compositionend when
+          // switching focus before confirming composition choice
+          // this also fixes the issue where some browsers e.g. iOS Chrome
+          // fires "change" instead of "input" on autocomplete.
+          el.addEventListener('change', onCompositionEnd);
+          /* istanbul ignore if */
+          if (isIE9) {
+            el.vmodel = true;
+          }
+        }
+      }
+    },
+
+    componentUpdated: function componentUpdated (el, binding, vnode) {
+      if (vnode.tag === 'select') {
+        setSelected(el, binding, vnode.context);
+        // in case the options rendered by v-for have changed,
+        // it's possible that the value is out-of-sync with the rendered options.
+        // detect such cases and filter out values that no longer has a matching
+        // option in the DOM.
+        var prevOptions = el._vOptions;
+        var curOptions = el._vOptions = [].map.call(el.options, getValue);
+        if (curOptions.some(function (o, i) { return !looseEqual(o, prevOptions[i]); })) {
+          // trigger change event if
+          // no matching option found for at least one value
+          var needReset = el.multiple
+            ? binding.value.some(function (v) { return hasNoMatchingOption(v, curOptions); })
+            : binding.value !== binding.oldValue && hasNoMatchingOption(binding.value, curOptions);
+          if (needReset) {
+            trigger(el, 'change');
+          }
+        }
+      }
+    }
+  };
+  var show = {
+    bind: function bind (el, ref, vnode) {
+      var value = ref.value;
+
+      vnode = locateNode(vnode);
+      var transition$$1 = vnode.data && vnode.data.transition;
+      var originalDisplay = el.__vOriginalDisplay =
+        el.style.display === 'none' ? '' : el.style.display;
+      if (value && transition$$1) {
+        vnode.data.show = true;
+        enter(vnode, function () {
+          el.style.display = originalDisplay;
+        });
+      } else {
+        el.style.display = value ? originalDisplay : 'none';
+      }
+    },
+
+    update: function update (el, ref, vnode) {
+      var value = ref.value;
+      var oldValue = ref.oldValue;
+
+      /* istanbul ignore if */
+      if (!value === !oldValue) { return }
+      vnode = locateNode(vnode);
+      var transition$$1 = vnode.data && vnode.data.transition;
+      if (transition$$1) {
+        vnode.data.show = true;
+        if (value) {
+          enter(vnode, function () {
+            el.style.display = el.__vOriginalDisplay;
+          });
+        } else {
+          leave(vnode, function () {
+            el.style.display = 'none';
+          });
+        }
+      } else {
+        el.style.display = value ? el.__vOriginalDisplay : 'none';
+      }
+    },
+
+    unbind: function unbind (
+      el,
+      binding,
+      vnode,
+      oldVnode,
+      isDestroy
+    ) {
+      if (!isDestroy) {
+        el.style.display = el.__vOriginalDisplay;
+      }
+    }
+  };
+  var platformDirectives = {
+    model: directive,
+    show: show
+  };
+
+  function initGlobalAPI (Devco) {
+    // config
+    var configDef = {};
+    configDef.get = function () { return config; };
+    {
+      configDef.set = function () {
+        warn(
+          'Do not replace the Devco.config object, set individual fields instead.'
+        );
+      };
+    }
+    Object.defineProperty(Devco, 'config', configDef);
+
+    // exposed util methods.
+    // NOTE: these are not considered part of the public API - avoid relying on
+    // them unless you are aware of the risk.
+    Devco.util = {
+      warn: warn,
+      extend: extend,
+      mergeOptions: mergeOptions,
+      defineReactive: defineReactive$$1
+    };
+
+    Devco.set = set;
+    Devco.delete = del;
+
+    // 2.6 explicit observable API
+    Devco.observable = function (obj) {
+      observe(obj);
+      return obj
+    };
+
+    Devco.options = Object.create(null);
+    ASSET_TYPES.forEach(function (type) {
+      Devco.options[type + 's'] = Object.create(null);
+    });
+
+    // this is used to identify the "base" constructor to extend all plain-object
+    // components with in Weex's multi-instance scenarios.
+    Devco.options._base = Devco;
+
+    extend(Devco.options.components, builtInComponents);
+
+    // initUse(Devco);
+    // initMixin$1(Devco);
+    // initExtend(Devco);
+    // initAssetRegisters(Devco);
+  }
+
+  initGlobalAPI(Devco);
 
 
   // public mount method
@@ -5700,11 +6150,21 @@ const createElement = (tag, attrs, children) => {
     el = el && inBrowser ? query(el) : undefined;
     return mountComponent(this, el, hydrating)
   };
-  let baseOptions = {}
+  
+  var baseOptions = {
+    expectHTML: true,
+    modules: modules$1,
+    directives: directives$1,
+    // isPreTag: isPreTag,
+    // isUnaryTag: isUnaryTag,
+    mustUseProp: mustUseProp,
+    // canBeLeftOpenTag: canBeLeftOpenTag,
+    // isReservedTag: isReservedTag,
+    // getTagNamespace: getTagNamespace,
+    // staticKeys: genStaticKeys(modules$1)
+  };
   var ref$1 = createCompiler(baseOptions);
   var compileToFunctions = ref$1.compileToFunctions;
-
-  // init(Devco)
 
   var uid = 0;
   function Devco (options) {
@@ -5719,6 +6179,20 @@ const createElement = (tag, attrs, children) => {
   eventsMixin(Devco);
   lifecycleMixin(Devco);
   renderMixin(Devco);
+
+console.log(Devco.config)
+  Devco.config.mustUseProp = mustUseProp;
+  // Devco.config.isReservedTag = isReservedTag;
+  // Devco.config.isReservedAttr = isReservedAttr;
+  // Devco.config.getTagNamespace = getTagNamespace;
+  // Devco.config.isUnknownElement = isUnknownElement;
+
+  extend(Devco.options.directives, platformDirectives);
+  // extend(Devco.options.components, platformComponents);
+
+  Devco.prototype.__patch__ = inBrowser ? patch : noop;
+
+
 
   Devco.compile = compileToFunctions;
 

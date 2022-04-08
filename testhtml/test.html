@@ -80,9 +80,9 @@
   <script src="../index.js"></script>
   <script src="../vue.js"></script>
   <script>
+    var data = { a: 1, test: ["test1", "test2", "test3"] }
 
     // DevcoJS instance
-    var data = { a: 1, test: ["test1", "test2", "test3"] }
     var instance = new Devco({
       el: "#abb",
       data: data
@@ -90,11 +90,11 @@
     console.log(instance)
 
     // Vue instance
-    var vm = new Vue({
-      el: '#abbVue',
-      data: data
-    })
-    console.log(vm)
+    // var vm = new Vue({
+    //   el: '#abbVue',
+    //   data: data
+    // })
+    // console.log(vm)
 
 
 // vm.$data === data // => true
