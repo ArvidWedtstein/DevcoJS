@@ -1,13 +1,14 @@
 /*!
- * Vue.js v2.6.14
+ * Devco.js v2.6.14
  * (c) 2014-2021 Evan You
  * Released under the MIT License.
  */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    (global = global || self, global.Vue = factory());
-  }(this, function () { 'use strict';
+    (global = global || self, global.Devco = factory());
+  }(this, function () { 
+    // 'use strict';
   
     /*  */
   
@@ -463,7 +464,7 @@
       mustUseProp: no,
   
       /**
-       * Perform updates asynchronously. Intended to be used by Vue Test Utils
+       * Perform updates asynchronously. Intended to be used by Devco Test Utils
        * This will significantly reduce performance if set to false.
        */
       async: true,
@@ -631,13 +632,13 @@
         if (config.warnHandler) {
           config.warnHandler.call(null, msg, vm, trace);
         } else if (hasConsole && (!config.silent)) {
-          console.error(("[Vue warn]: " + msg + trace));
+          console.error(("[Devco warn]: " + msg + trace));
         }
       };
   
       tip = function (msg, vm) {
         if (hasConsole && (!config.silent)) {
-          console.warn("[Vue tip]: " + msg + (
+          console.warn("[Devco tip]: " + msg + (
             vm ? generateComponentTrace(vm) : ''
           ));
         }
@@ -764,7 +765,7 @@
   
     /*  */
   
-    var VNode = function VNode (
+    var DevcoNode = function DevcoNode (
       tag,
       data,
       children,
@@ -807,27 +808,27 @@
       return this.componentInstance
     };
   
-    Object.defineProperties( VNode.prototype, prototypeAccessors );
+    Object.defineProperties( DevcoNode.prototype, prototypeAccessors );
   
-    var createEmptyVNode = function (text) {
+    var createEmptyDevcoNode = function (text) {
       if ( text === void 0 ) text = '';
   
-      var node = new VNode();
+      var node = new DevcoNode();
       node.text = text;
       node.isComment = true;
       return node
     };
   
-    function createTextVNode (val) {
-      return new VNode(undefined, undefined, undefined, String(val))
+    function createTextDevcoNode (val) {
+      return new DevcoNode(undefined, undefined, undefined, String(val))
     }
   
     // optimized shallow clone
     // used for static nodes and slot nodes because they may be reused across
     // multiple renders, cloning them avoids errors when DOM manipulations rely
     // on their elm reference.
-    function cloneVNode (vnode) {
-      var cloned = new VNode(
+    function cloneDevcoNode (vnode) {
+      var cloned = new DevcoNode(
         vnode.tag,
         vnode.data,
         // #7975
@@ -988,7 +989,7 @@
      * or the existing observer if the value already has one.
      */
     function observe (value, asRootData) {
-      if (!isObject(value) || value instanceof VNode) {
+      if (!isObject(value) || value instanceof DevcoNode) {
         return
       }
       var ob;
@@ -1095,7 +1096,7 @@
       var ob = (target).__ob__;
       if (target._isVue || (ob && ob.vmCount)) {
         warn(
-          'Avoid adding reactive properties to a Vue instance or its root $data ' +
+          'Avoid adding reactive properties to a Devco instance or its root $data ' +
           'at runtime - declare it upfront in the data option.'
         );
         return val
@@ -1124,7 +1125,7 @@
       var ob = (target).__ob__;
       if (target._isVue || (ob && ob.vmCount)) {
         warn(
-          'Avoid deleting properties on a Vue instance or its root $data ' +
+          'Avoid deleting properties on a Devco instance or its root $data ' +
           '- just set it to null.'
         );
         return
@@ -1213,7 +1214,7 @@
       vm
     ) {
       if (!vm) {
-        // in a Vue.extend merge, both should be functions
+        // in a Devco.extend merge, both should be functions
         if (!childVal) {
           return parentVal
         }
@@ -1426,9 +1427,8 @@
      * Ensure all props option syntax are normalized into the
      * Object-based format.
      */
-    function normalizeProps (options, vm) {
+     function normalizeProps (options, vm) {
       var props = options.props;
-
       if (!props) { return }
       var res = {};
       var i, val, name;
@@ -1531,10 +1531,11 @@
         child = child.options;
       }
   
+      console.log("CHILD",child)
       normalizeProps(child, vm);
       normalizeInject(child, vm);
       normalizeDirectives(child);
-      
+  
       // Apply extends and mixins on the child options,
       // but only if it is a raw options object that isn't
       // the result of another mergeOptions call.
@@ -2070,8 +2071,8 @@
       var warnReservedPrefix = function (target, key) {
         warn(
           "Property \"" + key + "\" must be accessed with \"$data." + key + "\" because " +
-          'properties starting with "$" or "_" are not proxied in the Vue instance to ' +
-          'prevent conflicts with Vue internals. ' +
+          'properties starting with "$" or "_" are not proxied in the Devco instance to ' +
+          'prevent conflicts with Devco internals. ' +
           'See: https://vuejs.org/v2/api/#data',
           target
         );
@@ -2149,7 +2150,7 @@
     function _traverse (val, seen) {
       var i, keys;
       var isA = Array.isArray(val);
-      if ((!isA && !isObject(val)) || Object.isFrozen(val) || val instanceof VNode) {
+      if ((!isA && !isObject(val)) || Object.isFrozen(val) || val instanceof DevcoNode) {
         return
       }
       if (val.__ob__) {
@@ -2246,8 +2247,8 @@
   
     /*  */
   
-    function mergeVNodeHook (def, hookKey, hook) {
-      if (def instanceof VNode) {
+    function mergeDevcoNodeHook (def, hookKey, hook) {
+      if (def instanceof DevcoNode) {
         def = def.data.hook || (def.data.hook = {});
       }
       var invoker;
@@ -2281,7 +2282,7 @@
   
     /*  */
   
-    function extractPropsFromVNodeData (
+    function extractPropsFromDevcoNodeData (
       data,
       Ctor,
       tag
@@ -2353,7 +2354,7 @@
     // statically analyzing the template at compile time.
     //
     // For plain HTML markup, normalization can be completely skipped because the
-    // generated render function is guaranteed to return Array<VNode>. There are
+    // generated render function is guaranteed to return Array<DevcoNode>. There are
     // two cases where extra normalization is needed:
   
     // 1. When the children contains components - because a functional component
@@ -2376,7 +2377,7 @@
     // is needed to cater to all possible types of children values.
     function normalizeChildren (children) {
       return isPrimitive(children)
-        ? [createTextVNode(children)]
+        ? [createTextDevcoNode(children)]
         : Array.isArray(children)
           ? normalizeArrayChildren(children)
           : undefined
@@ -2400,7 +2401,7 @@
             c = normalizeArrayChildren(c, ((nestedIndex || '') + "_" + i));
             // merge adjacent text nodes
             if (isTextNode(c[0]) && isTextNode(last)) {
-              res[lastIndex] = createTextVNode(last.text + (c[0]).text);
+              res[lastIndex] = createTextDevcoNode(last.text + (c[0]).text);
               c.shift();
             }
             res.push.apply(res, c);
@@ -2410,15 +2411,15 @@
             // merge adjacent text nodes
             // this is necessary for SSR hydration because text nodes are
             // essentially merged when rendered to HTML strings
-            res[lastIndex] = createTextVNode(last.text + c);
+            res[lastIndex] = createTextDevcoNode(last.text + c);
           } else if (c !== '') {
             // convert primitive to vnode
-            res.push(createTextVNode(c));
+            res.push(createTextDevcoNode(c));
           }
         } else {
           if (isTextNode(c) && isTextNode(last)) {
             // merge adjacent text nodes
-            res[lastIndex] = createTextVNode(last.text + c.text);
+            res[lastIndex] = createTextDevcoNode(last.text + c.text);
           } else {
             // default key for nested array children (likely generated by v-for)
             if (isTrue(children._isVList) &&
@@ -2507,7 +2508,7 @@
   
   
     /**
-     * Runtime helper for resolving raw children VNodes into a slot object.
+     * Runtime helper for resolving raw children DevcoNodes into a slot object.
      */
     function resolveSlots (
       children,
@@ -2520,7 +2521,7 @@
       for (var i = 0, l = children.length; i < l; i++) {
         var child = children[i];
         var data = child.data;
-        // remove slot attribute if the node is resolved as a Vue slot node
+        // remove slot attribute if the node is resolved as a Devco slot node
         if (data && data.attrs && data.attrs.slot) {
           delete data.attrs.slot;
         }
@@ -2746,7 +2747,7 @@
   
     /**
      * Runtime helper for checking keyCodes from config.
-     * exposed as Vue.prototype._k
+     * exposed as Devco.prototype._k
      * passing in eventKeyName as last argument separately for backwards compat
      */
     function checkKeyCodes (
@@ -2770,7 +2771,7 @@
     /*  */
   
     /**
-     * Runtime helper for merging v-bind="object" into a VNode's data.
+     * Runtime helper for merging v-bind="object" into a DevcoNode's data.
      */
     function bindObjectProps (
       data,
@@ -2972,8 +2973,8 @@
       target._f = resolveFilter;
       target._k = checkKeyCodes;
       target._b = bindObjectProps;
-      target._v = createTextVNode;
-      target._e = createEmptyVNode;
+      target._v = createTextDevcoNode;
+      target._e = createEmptyDevcoNode;
       target._u = resolveScopedSlots;
       target._g = bindObjectListeners;
       target._d = bindDynamicKeys;
@@ -3087,7 +3088,7 @@
   
       var vnode = options.render.call(null, renderContext._c, renderContext);
   
-      if (vnode instanceof VNode) {
+      if (vnode instanceof DevcoNode) {
         return cloneAndMarkFunctionalResult(vnode, data, renderContext.parent, options, renderContext)
       } else if (Array.isArray(vnode)) {
         var vnodes = normalizeChildren(vnode) || [];
@@ -3103,7 +3104,7 @@
       // #7817 clone node before setting fnContext, otherwise if the node is reused
       // (e.g. it was from a cached normal slot) the fnContext causes named slots
       // that should not be matched to match.
-      var clone = cloneVNode(vnode);
+      var clone = cloneDevcoNode(vnode);
       clone.fnContext = contextVm;
       clone.fnOptions = options;
       {
@@ -3129,8 +3130,8 @@
   
     /*  */
   
-    // inline hooks to be invoked on component VNodes during patch
-    var componentVNodeHooks = {
+    // inline hooks to be invoked on component DevcoNodes during patch
+    var componentDevcoNodeHooks = {
       init: function init (vnode, hydrating) {
         if (
           vnode.componentInstance &&
@@ -3139,7 +3140,7 @@
         ) {
           // kept-alive components, treat as a patch
           var mountedNode = vnode; // work around flow
-          componentVNodeHooks.prepatch(mountedNode, mountedNode);
+          componentDevcoNodeHooks.prepatch(mountedNode, mountedNode);
         } else {
           var child = vnode.componentInstance = createComponentInstanceForVnode(
             vnode,
@@ -3194,7 +3195,7 @@
       }
     };
   
-    var hooksToMerge = Object.keys(componentVNodeHooks);
+    var hooksToMerge = Object.keys(componentDevcoNodeHooks);
   
     function createComponent (
       Ctor,
@@ -3254,7 +3255,7 @@
       }
   
       // extract props
-      var propsData = extractPropsFromVNodeData(data, Ctor, tag);
+      var propsData = extractPropsFromDevcoNodeData(data, Ctor, tag);
   
       // functional component
       if (isTrue(Ctor.options.functional)) {
@@ -3285,7 +3286,7 @@
   
       // return a placeholder vnode
       var name = Ctor.options.name || tag;
-      var vnode = new VNode(
+      var vnode = new DevcoNode(
         ("vue-component-" + (Ctor.cid) + (name ? ("-" + name) : '')),
         data, undefined, undefined, undefined, context,
         { Ctor: Ctor, propsData: propsData, listeners: listeners, tag: tag, children: children },
@@ -3296,7 +3297,7 @@
     }
   
     function createComponentInstanceForVnode (
-      // we know it's MountedComponentVNode but flow doesn't
+      // we know it's MountedComponentDevcoNode but flow doesn't
       vnode,
       // activeInstance in lifecycle state
       parent
@@ -3320,7 +3321,7 @@
       for (var i = 0; i < hooksToMerge.length; i++) {
         var key = hooksToMerge[i];
         var existing = hooks[key];
-        var toMerge = componentVNodeHooks[key];
+        var toMerge = componentDevcoNodeHooks[key];
         if (existing !== toMerge && !(existing && existing._merged)) {
           hooks[key] = existing ? mergeHook$1(toMerge, existing) : toMerge;
         }
@@ -3374,6 +3375,9 @@
       normalizationType,
       alwaysNormalize
     ) {
+      console.info((arguments.callee.toString().substring('function '.length))
+    .substring(0, (arguments.callee.toString().substring('function '.length))
+    .indexOf('(')), tag)
       if (Array.isArray(data) || isPrimitive(data)) {
         normalizationType = children;
         children = data;
@@ -3398,7 +3402,7 @@
           'Always create fresh vnode data objects in each render!',
           context
         );
-        return createEmptyVNode()
+        return createEmptyDevcoNode()
       }
       // object syntax in v-bind
       if (isDef(data) && isDef(data.is)) {
@@ -3406,7 +3410,7 @@
       }
       if (!tag) {
         // in case of component :is set to falsy value
-        return createEmptyVNode()
+        return createEmptyDevcoNode()
       }
       // warn against non-primitive key
       if (isDef(data) && isDef(data.key) && !isPrimitive(data.key)
@@ -3444,7 +3448,7 @@
               context
             );
           }
-          vnode = new VNode(
+          vnode = new DevcoNode(
             config.parsePlatformTagName(tag), data, children,
             undefined, undefined, context
           );
@@ -3455,7 +3459,7 @@
           // unknown or unlisted namespaced elements
           // check at runtime because it may get assigned a namespace when its
           // parent normalizes children
-          vnode = new VNode(
+          vnode = new DevcoNode(
             tag, data, children,
             undefined, undefined, context
           );
@@ -3471,7 +3475,7 @@
         if (isDef(data)) { registerDeepBindings(data); }
         return vnode
       } else {
-        return createEmptyVNode()
+        return createEmptyDevcoNode()
       }
     }
   
@@ -3508,6 +3512,9 @@
     /*  */
   
     function initRender (vm) {
+      console.info((arguments.callee.toString().substring('function '.length))
+    .substring(0, (arguments.callee.toString().substring('function '.length))
+    .indexOf('(')))
       vm._vnode = null; // the root of the child tree
       vm._staticTrees = null; // v-once cached trees
       var options = vm.$options;
@@ -3541,18 +3548,17 @@
   
     var currentRenderingInstance = null;
   
-    function renderMixin (Vue) {
+    function renderMixin (Devco) {
       // install runtime convenience helpers
-      installRenderHelpers(Vue.prototype);
+      installRenderHelpers(Devco.prototype);
   
-      Vue.prototype.$nextTick = function (fn) {
+      Devco.prototype.$nextTick = function (fn) {
         return nextTick(fn, this)
       };
   
-      Vue.prototype._render = function () {
+      Devco.prototype._render = function () {
         var vm = this;
         var ref = vm.$options;
-        console.log('REF', ref)
         var render = ref.render;
         var _parentVnode = ref._parentVnode;
   
@@ -3598,7 +3604,7 @@
           vnode = vnode[0];
         }
         // return empty vnode in case the render function errored out
-        if (!(vnode instanceof VNode)) {
+        if (!(vnode instanceof DevcoNode)) {
           if (Array.isArray(vnode)) {
             warn(
               'Multiple root nodes returned from render function. Render function ' +
@@ -3606,7 +3612,7 @@
               vm
             );
           }
-          vnode = createEmptyVNode();
+          vnode = createEmptyDevcoNode();
         }
         // set parent
         vnode.parent = _parentVnode;
@@ -3635,7 +3641,7 @@
       children,
       tag
     ) {
-      var node = createEmptyVNode();
+      var node = createEmptyDevcoNode();
       node.asyncFactory = factory;
       node.asyncMeta = { data: data, context: context, children: children, tag: tag };
       return node
@@ -3820,9 +3826,9 @@
       target = undefined;
     }
   
-    function eventsMixin (Vue) {
+    function eventsMixin (Devco) {
       var hookRE = /^hook:/;
-      Vue.prototype.$on = function (event, fn) {
+      Devco.prototype.$on = function (event, fn) {
         var vm = this;
         if (Array.isArray(event)) {
           for (var i = 0, l = event.length; i < l; i++) {
@@ -3839,7 +3845,7 @@
         return vm
       };
   
-      Vue.prototype.$once = function (event, fn) {
+      Devco.prototype.$once = function (event, fn) {
         var vm = this;
         function on () {
           vm.$off(event, on);
@@ -3850,7 +3856,7 @@
         return vm
       };
   
-      Vue.prototype.$off = function (event, fn) {
+      Devco.prototype.$off = function (event, fn) {
         var vm = this;
         // all
         if (!arguments.length) {
@@ -3886,7 +3892,7 @@
         return vm
       };
   
-      Vue.prototype.$emit = function (event) {
+      Devco.prototype.$emit = function (event) {
         var vm = this;
         {
           var lowerCaseEvent = event.toLowerCase();
@@ -3952,15 +3958,14 @@
       vm._isBeingDestroyed = false;
     }
   
-    function lifecycleMixin (Vue) {
-      Vue.prototype._update = function (vnode, hydrating) {
+    function lifecycleMixin (Devco) {
+      Devco.prototype._update = function (vnode, hydrating) {
         var vm = this;
         var prevEl = vm.$el;
-        console.log('VM', vm)
         var prevVnode = vm._vnode;
         var restoreActiveInstance = setActiveInstance(vm);
         vm._vnode = vnode;
-        // Vue.prototype.__patch__ is injected in entry points
+        // Devco.prototype.__patch__ is injected in entry points
         // based on the rendering backend used.
         if (!prevVnode) {
           // initial render
@@ -3986,14 +3991,14 @@
         // updated in a parent's updated hook.
       };
   
-      Vue.prototype.$forceUpdate = function () {
+      Devco.prototype.$forceUpdate = function () {
         var vm = this;
         if (vm._watcher) {
           vm._watcher.update();
         }
       };
   
-      Vue.prototype.$destroy = function () {
+      Devco.prototype.$destroy = function () {
         var vm = this;
         if (vm._isBeingDestroyed) {
           return
@@ -4044,14 +4049,13 @@
     ) {
       vm.$el = el;
       if (!vm.$options.render) {
-        vm.$options.render = createEmptyVNode;
-        console.log('VM OPTIONS RENDER')
+        vm.$options.render = createEmptyDevcoNode;
         {
           /* istanbul ignore if */
           if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
             vm.$options.el || el) {
             warn(
-              'You are using the runtime-only build of Vue where the template ' +
+              'You are using the runtime-only build of Devco where the template ' +
               'compiler is not available. Either pre-compile the templates into ' +
               'render functions, or use the compiler-included build.',
               vm
@@ -4086,7 +4090,6 @@
           measure(("vue " + name + " patch"), startTag, endTag);
         };
       } else {
-        console.log('RENDER')
         updateComponent = function () {
           vm._update(vm._render(), hydrating);
         };
@@ -4707,7 +4710,7 @@
           });
         }
         // static props are already proxied on the component's prototype
-        // during Vue.extend(). We only need to proxy props defined at
+        // during Devco.extend(). We only need to proxy props defined at
         // instantiation here.
         if (!(key in vm)) {
           proxy(vm, "_props", key);
@@ -4888,7 +4891,7 @@
           }
           if ((key in vm) && isReserved(key)) {
             warn(
-              "Method \"" + key + "\" conflicts with an existing Vue instance method. " +
+              "Method \"" + key + "\" conflicts with an existing Devco instance method. " +
               "Avoid defining component methods that start with _ or $."
             );
           }
@@ -4926,7 +4929,7 @@
       return vm.$watch(expOrFn, handler, options)
     }
   
-    function stateMixin (Vue) {
+    function stateMixin (Devco) {
       // flow somehow has problems with directly declared definition object
       // when using Object.defineProperty, so we have to procedurally build up
       // the object here.
@@ -4946,13 +4949,13 @@
           warn("$props is readonly.", this);
         };
       }
-      Object.defineProperty(Vue.prototype, '$data', dataDef);
-      Object.defineProperty(Vue.prototype, '$props', propsDef);
+      Object.defineProperty(Devco.prototype, '$data', dataDef);
+      Object.defineProperty(Devco.prototype, '$props', propsDef);
   
-      Vue.prototype.$set = set;
-      Vue.prototype.$delete = del;
+      Devco.prototype.$set = set;
+      Devco.prototype.$delete = del;
   
-      Vue.prototype.$watch = function (
+      Devco.prototype.$watch = function (
         expOrFn,
         cb,
         options
@@ -4980,8 +4983,11 @@
   
     var uid$3 = 0;
   
-    function initMixin (Vue) {
-      Vue.prototype._init = function (options) {
+    function initMixin (Devco) {
+      console.info((arguments.callee.toString().substring('function '.length))
+    .substring(0, (arguments.callee.toString().substring('function '.length))
+    .indexOf('(')))
+      Devco.prototype._init = function (options) {
         var vm = this;
         // a uid
         vm._uid = uid$3++;
@@ -5003,7 +5009,6 @@
           // internal component options needs special treatment.
           initInternalComponent(vm, options);
         } else {
-          console.log('RESOLVE OPTIONS', vm.constructor)
           vm.$options = mergeOptions(
             resolveConstructorOptions(vm.constructor),
             options || {},
@@ -5059,6 +5064,7 @@
   
     function resolveConstructorOptions (Ctor) {
       var options = Ctor.options;
+      console.log(options)
       if (Ctor.super) {
         var superOptions = resolveConstructorOptions(Ctor.super);
         var cachedSuperOptions = Ctor.superOptions;
@@ -5078,6 +5084,7 @@
           }
         }
       }
+      console.log('OPTIONS-VUE', options);
       return options
     }
   
@@ -5094,24 +5101,24 @@
       return modified
     }
   
-    function Vue (options) {
-      if (!(this instanceof Vue)
+    function Devco (options) {
+      if (!(this instanceof Devco)
       ) {
-        warn('Vue is a constructor and should be called with the `new` keyword');
+        warn('Devco is a constructor and should be called with the `new` keyword');
       }
       this._init(options);
     }
   
-    initMixin(Vue);
-    stateMixin(Vue);
-    eventsMixin(Vue);
-    lifecycleMixin(Vue);
-    renderMixin(Vue);
+    initMixin(Devco);
+    stateMixin(Devco);
+    eventsMixin(Devco);
+    lifecycleMixin(Devco);
+    renderMixin(Devco);
   
     /*  */
   
-    function initUse (Vue) {
-      Vue.use = function (plugin) {
+    function initUse (Devco) {
+      Devco.use = function (plugin) {
         var installedPlugins = (this._installedPlugins || (this._installedPlugins = []));
         if (installedPlugins.indexOf(plugin) > -1) {
           return this
@@ -5132,8 +5139,8 @@
   
     /*  */
   
-    function initMixin$1 (Vue) {
-      Vue.mixin = function (mixin) {
+    function initMixin$1 (Devco) {
+      Devco.mixin = function (mixin) {
         this.options = mergeOptions(this.options, mixin);
         return this
       };
@@ -5141,19 +5148,19 @@
   
     /*  */
   
-    function initExtend (Vue) {
+    function initExtend (Devco) {
       /**
-       * Each instance constructor, including Vue, has a unique
+       * Each instance constructor, including Devco, has a unique
        * cid. This enables us to create wrapped "child
        * constructors" for prototypal inheritance and cache them.
        */
-      Vue.cid = 0;
+      Devco.cid = 0;
       var cid = 1;
   
       /**
        * Class inheritance
        */
-      Vue.extend = function (extendOptions) {
+      Devco.extend = function (extendOptions) {
         extendOptions = extendOptions || {};
         var Super = this;
         var SuperId = Super.cid;
@@ -5180,7 +5187,7 @@
         Sub['super'] = Super;
   
         // For props and computed properties, we define the proxy getters on
-        // the Vue instances at extension time, on the extended prototype. This
+        // the Devco instances at extension time, on the extended prototype. This
         // avoids Object.defineProperty calls for each instance created.
         if (Sub.options.props) {
           initProps$1(Sub);
@@ -5233,12 +5240,12 @@
   
     /*  */
   
-    function initAssetRegisters (Vue) {
+    function initAssetRegisters (Devco) {
       /**
        * Create asset registration methods.
        */
       ASSET_TYPES.forEach(function (type) {
-        Vue[type] = function (
+        Devco[type] = function (
           id,
           definition
         ) {
@@ -5327,7 +5334,7 @@
       },
   
       methods: {
-        cacheVNode: function cacheVNode() {
+        cacheDevcoNode: function cacheDevcoNode() {
           var ref = this;
           var cache = ref.cache;
           var keys = ref.keys;
@@ -5366,7 +5373,7 @@
       mounted: function mounted () {
         var this$1 = this;
   
-        this.cacheVNode();
+        this.cacheDevcoNode();
         this.$watch('include', function (val) {
           pruneCache(this$1, function (name) { return matches(val, name); });
         });
@@ -5376,7 +5383,7 @@
       },
   
       updated: function updated () {
-        this.cacheVNode();
+        this.cacheDevcoNode();
       },
   
       render: function render () {
@@ -5429,63 +5436,63 @@
   
     /*  */
   
-    function initGlobalAPI (Vue) {
+    function initGlobalAPI (Devco) {
       // config
       var configDef = {};
       configDef.get = function () { return config; };
       {
         configDef.set = function () {
           warn(
-            'Do not replace the Vue.config object, set individual fields instead.'
+            'Do not replace the Devco.config object, set individual fields instead.'
           );
         };
       }
-      Object.defineProperty(Vue, 'config', configDef);
+      Object.defineProperty(Devco, 'config', configDef);
   
       // exposed util methods.
       // NOTE: these are not considered part of the public API - avoid relying on
       // them unless you are aware of the risk.
-      Vue.util = {
+      Devco.util = {
         warn: warn,
         extend: extend,
         mergeOptions: mergeOptions,
         defineReactive: defineReactive$$1
       };
   
-      Vue.set = set;
-      Vue.delete = del;
-      Vue.nextTick = nextTick;
+      Devco.set = set;
+      Devco.delete = del;
+      Devco.nextTick = nextTick;
   
       // 2.6 explicit observable API
-      Vue.observable = function (obj) {
+      Devco.observable = function (obj) {
         observe(obj);
         return obj
       };
   
-      Vue.options = Object.create(null);
+      Devco.options = Object.create(null);
       ASSET_TYPES.forEach(function (type) {
-        Vue.options[type + 's'] = Object.create(null);
+        Devco.options[type + 's'] = Object.create(null);
       });
   
       // this is used to identify the "base" constructor to extend all plain-object
       // components with in Weex's multi-instance scenarios.
-      Vue.options._base = Vue;
+      Devco.options._base = Devco;
   
-      extend(Vue.options.components, builtInComponents);
+      extend(Devco.options.components, builtInComponents);
   
-      initUse(Vue);
-      initMixin$1(Vue);
-      initExtend(Vue);
-      initAssetRegisters(Vue);
+      initUse(Devco);
+      initMixin$1(Devco);
+      initExtend(Devco);
+      initAssetRegisters(Devco);
     }
   
-    initGlobalAPI(Vue);
+    initGlobalAPI(Devco);
   
-    Object.defineProperty(Vue.prototype, '$isServer', {
+    Object.defineProperty(Devco.prototype, '$isServer', {
       get: isServerRendering
     });
   
-    Object.defineProperty(Vue.prototype, '$ssrContext', {
+    Object.defineProperty(Devco.prototype, '$ssrContext', {
       get: function get () {
         /* istanbul ignore next */
         return this.$vnode && this.$vnode.ssrContext
@@ -5493,11 +5500,11 @@
     });
   
     // expose FunctionalRenderContext for ssr runtime helper installation
-    Object.defineProperty(Vue, 'FunctionalRenderContext', {
+    Object.defineProperty(Devco, 'FunctionalRenderContext', {
       value: FunctionalRenderContext
     });
   
-    Vue.version = '2.6.14';
+    Devco.version = '2.6.14';
   
     /*  */
   
@@ -5857,7 +5864,7 @@
      * of making flow understand it is not worth it.
      */
   
-    var emptyNode = new VNode('', {}, []);
+    var emptyNode = new DevcoNode('', {}, []);
   
     var hooks = ['create', 'activate', 'update', 'remove', 'destroy'];
   
@@ -5897,6 +5904,9 @@
     }
   
     function createPatchFunction (backend) {
+      console.info((arguments.callee.toString().substring('function '.length))
+    .substring(0, (arguments.callee.toString().substring('function '.length))
+    .indexOf('(')))
       var i, j;
       var cbs = {};
   
@@ -5913,7 +5923,7 @@
       }
   
       function emptyNodeAt (elm) {
-        return new VNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
+        return new DevcoNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
       }
   
       function createRmCb (childElm, listeners) {
@@ -5967,7 +5977,7 @@
           // potential patch errors down the road when it's used as an insertion
           // reference node. Instead, we clone the node on-demand before creating
           // associated DOM element for it.
-          vnode = ownerArray[index] = cloneVNode(vnode);
+          vnode = ownerArray[index] = cloneDevcoNode(vnode);
         }
         vnode.isRootInsert = !nested; // for transition enter check
         if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
@@ -6324,7 +6334,7 @@
   
         if (isDef(vnode.elm) && isDef(ownerArray)) {
           // clone reused vnode
-          vnode = ownerArray[index] = cloneVNode(vnode);
+          vnode = ownerArray[index] = cloneDevcoNode(vnode);
         }
   
         var elm = vnode.elm = oldVnode.elm;
@@ -6471,7 +6481,7 @@
                   ) {
                     hydrationBailed = true;
                     console.warn('Parent: ', elm);
-                    console.warn('Mismatching childNodes vs. VNodes: ', elm.childNodes, children);
+                    console.warn('Mismatching childNodes vs. DevcoNodes: ', elm.childNodes, children);
                   }
                   return false
                 }
@@ -6667,14 +6677,14 @@
           }
         };
         if (isCreate) {
-          mergeVNodeHook(vnode, 'insert', callInsert);
+          mergeDevcoNodeHook(vnode, 'insert', callInsert);
         } else {
           callInsert();
         }
       }
   
       if (dirsWithPostpatch.length) {
-        mergeVNodeHook(vnode, 'postpatch', function () {
+        mergeDevcoNodeHook(vnode, 'postpatch', function () {
           for (var i = 0; i < dirsWithPostpatch.length; i++) {
             callHook$1(dirsWithPostpatch[i], 'componentUpdated', vnode, oldVnode);
           }
@@ -6980,7 +6990,7 @@
   
     /* eslint-disable no-unused-vars */
     function baseWarn (msg, range) {
-      console.error(("[Vue compiler]: " + msg));
+      console.error(("[Devco compiler]: " + msg));
     }
     /* eslint-enable no-unused-vars */
   
@@ -8275,7 +8285,7 @@
   
       if (!vnode.data.show) {
         // remove pending leave element on enter by injecting an insert hook
-        mergeVNodeHook(vnode, 'insert', function () {
+        mergeDevcoNodeHook(vnode, 'insert', function () {
           var parent = el.parentNode;
           var pendingNode = parent && parent._pending && parent._pending[vnode.key];
           if (pendingNode &&
@@ -8522,7 +8532,7 @@
         if (vnode.tag === 'select') {
           // #6903
           if (oldVnode.elm && !oldVnode.elm._vOptions) {
-            mergeVNodeHook(vnode, 'postpatch', function () {
+            mergeDevcoNodeHook(vnode, 'postpatch', function () {
               directive.componentUpdated(el, binding, vnode);
             });
           } else {
@@ -8877,7 +8887,7 @@
           if (mode === 'out-in') {
             // return placeholder node and queue update when leave finishes
             this._leaving = true;
-            mergeVNodeHook(oldData, 'afterLeave', function () {
+            mergeDevcoNodeHook(oldData, 'afterLeave', function () {
               this$1._leaving = false;
               this$1.$forceUpdate();
             });
@@ -8888,9 +8898,9 @@
             }
             var delayedLeave;
             var performLeave = function () { delayedLeave(); };
-            mergeVNodeHook(data, 'afterEnter', performLeave);
-            mergeVNodeHook(data, 'enterCancelled', performLeave);
-            mergeVNodeHook(oldData, 'delayLeave', function (leave) { delayedLeave = leave; });
+            mergeDevcoNodeHook(data, 'afterEnter', performLeave);
+            mergeDevcoNodeHook(data, 'enterCancelled', performLeave);
+            mergeDevcoNodeHook(oldData, 'delayLeave', function (leave) { delayedLeave = leave; });
           }
         }
   
@@ -9075,21 +9085,21 @@
     /*  */
   
     // install platform specific utils
-    Vue.config.mustUseProp = mustUseProp;
-    Vue.config.isReservedTag = isReservedTag;
-    Vue.config.isReservedAttr = isReservedAttr;
-    Vue.config.getTagNamespace = getTagNamespace;
-    Vue.config.isUnknownElement = isUnknownElement;
+    Devco.config.mustUseProp = mustUseProp;
+    Devco.config.isReservedTag = isReservedTag;
+    Devco.config.isReservedAttr = isReservedAttr;
+    Devco.config.getTagNamespace = getTagNamespace;
+    Devco.config.isUnknownElement = isUnknownElement;
   
     // install platform runtime directives & components
-    extend(Vue.options.directives, platformDirectives);
-    extend(Vue.options.components, platformComponents);
+    extend(Devco.options.directives, platformDirectives);
+    extend(Devco.options.components, platformComponents);
   
     // install platform patch function
-    Vue.prototype.__patch__ = inBrowser ? patch : noop;
+    Devco.prototype.__patch__ = inBrowser ? patch : noop;
   
     // public mount method
-    Vue.prototype.$mount = function (
+    Devco.prototype.$mount = function (
       el,
       hydrating
     ) {
@@ -9103,19 +9113,19 @@
       setTimeout(function () {
         if (config.devtools) {
           if (devtools) {
-            devtools.emit('init', Vue);
+            devtools.emit('init', Devco);
           } else {
-            console[console.info ? 'info' : 'log'](
-              'Download the Vue Devtools extension for a better development experience:\n' +
-              'https://github.com/vuejs/vue-devtools'
-            );
+            // console[console.info ? 'info' : 'log'](
+            //   'Download the DevcoJS Devtools extension for a better development experience:\n' +
+            //   'https://github.com/vuejs/vue-devtools'
+            // );
           }
         }
         if (config.productionTip !== false &&
           typeof console !== 'undefined'
         ) {
           console[console.info ? 'info' : 'log'](
-            "You are running Vue in development mode.\n" +
+            "You are running DevcoJS in development mode.\n" +
             "Make sure to turn on production mode when deploying for production.\n" +
             "See more tips at https://vuejs.org/guide/deployment.html"
           );
@@ -11494,7 +11504,6 @@
     }
   
     function genProps (props) {
-      console.log('GENERATE PROPS', props);
       var staticProps = "";
       var dynamicProps = "";
       for (var i = 0; i < props.length; i++) {
@@ -11735,7 +11744,7 @@
           } catch (e) {
             if (e.toString().match(/unsafe-eval|CSP/)) {
               warn$$1(
-                'It seems you are using the standalone build of Vue.js in an ' +
+                'It seems you are using the standalone build of Devco.js in an ' +
                 'environment with Content Security Policy that prohibits unsafe-eval. ' +
                 'The template compiler cannot work in this environment. Consider ' +
                 'relaxing the policy to allow unsafe-eval or pre-compiling your ' +
@@ -11787,7 +11796,6 @@
         // turn code into functions
         var res = {};
         var fnGenErrors = [];
-
         res.render = createFunction(compiled.render, fnGenErrors);
         res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
           return createFunction(code, fnGenErrors)
@@ -11820,7 +11828,10 @@
   
     function createCompilerCreator (baseCompile) {
       return function createCompiler (baseOptions) {
-        function compile (template, options) {
+        function compile (
+          template,
+          options
+        ) {
           var finalOptions = Object.create(baseOptions);
           var errors = [];
           var tips = [];
@@ -11934,18 +11945,17 @@
       return el && el.innerHTML
     });
   
-    var mount = Vue.prototype.$mount;
-    Vue.prototype.$mount = function (
+    var mount = Devco.prototype.$mount;
+    Devco.prototype.$mount = function (
       el,
       hydrating
     ) {
-      console.info("MOUNT")
       el = el && query(el);
   
       /* istanbul ignore if */
       if (el === document.body || el === document.documentElement) {
         warn(
-          "Do not mount Vue to <html> or <body> - mount to normal elements instead."
+          "Do not mount Devco to <html> or <body> - mount to normal elements instead."
         );
         return this
       }
@@ -12019,7 +12029,7 @@
       }
     }
   
-    Vue.compile = compileToFunctions;
-    return Vue;
+    Devco.compile = compileToFunctions;
+    return Devco;
   
   }));
