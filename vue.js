@@ -502,12 +502,12 @@
         configurable: true
       });
     }
-  
     /**
      * Parse simple path.
      */
     var bailRE = new RegExp(("[^" + (unicodeRegExp.source) + ".$_\\d]"));
     function parsePath (path) {
+      
       if (bailRE.test(path)) {
         return
       }
@@ -666,6 +666,7 @@
       };
   
       var repeat = function (str, n) {
+        console.log('repeat')
         var res = '';
         while (n) {
           if (n % 2 === 1) { res += str; }

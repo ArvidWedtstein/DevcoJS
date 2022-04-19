@@ -20,7 +20,7 @@
 </head>
 <!--https://github.com/vuejs/vue/blob/6aa11872c88481dfa2da151536317176c48f226c/packages/weex-template-compiler/build.js#L942-->
 <body>
-  <!--<div container>
+  <div kontainer>
     <devco-data>
       {
         "name": "test",
@@ -37,15 +37,19 @@
         }
       }
     </devco-data>
+    <devco-config>
+      styling
+      styling
+    </devco-config>
     <div>
       <input id="input" koble="message"/>
       <div hvis="bruh" onclick="onButtonClick()">
         <button>Click!</button>
       </div>
-      <ul bryter="message">
-        <li sak="1">test1</li>
-        <li sak="2">test2</li>
-        <li sak="3">test3</li>
+      <ul brytar="message">
+        <li tilfelle="1">test1</li>
+        <li tilfelle="2">test2</li>
+        <li tilfelle="3">test3</li>
       </ul>
       <devco-logo text="test"></devco-logo>
       <div id="vue">
@@ -64,7 +68,7 @@
         <p for="i in test" :key="i">{{i}}</p>
       </div>
     </div>
-  </div>-->
+  </div>
   <div>
     <div id="abb">
       <p v-text="a">t</p>
@@ -78,17 +82,18 @@
     </div>
   </div>
   <!-- <script src="../index.js"></script> -->
-  <!-- <script src="../vue.js"></script> -->
-  <script src="../vue2.js"></script>
+  <script src="../vue.js"></script>
+  <script src="../src/devco.js"></script>
+  <!-- <script src="../vue2.js"></script> -->
   <script>
     var data = { a: 1, test: ["test1", "test2", "test3"] }
 
     // DevcoJS instance
-    var instance = new Devco({
-      el: "#abb",
-      data: data
-    })
-    console.log(instance)
+    // var instance = new Devco({
+    //   el: "#abb",
+    //   data: data
+    // })
+    // console.log(instance)
 
     // Vue instance
     // var vm = new Vue({
