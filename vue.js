@@ -2656,6 +2656,7 @@
         ret = new Array(val.length);
         for (i = 0, l = val.length; i < l; i++) {
           ret[i] = render(val[i], i);
+          console.log('RET', ret[i])
         }
       } else if (typeof val === 'number') {
         ret = new Array(val);
@@ -3042,7 +3043,7 @@
         this.$slots = this.slots();
         this.$scopedSlots = normalizeScopedSlots(data.scopedSlots, this.$slots);
       }
-  
+      
       if (options._scopeId) {
         this._c = function (a, b, c, d) {
           var vnode = createElement(contextVm, a, b, c, d, needNormalization);
@@ -3520,7 +3521,7 @@
       // so that we get proper render context inside it.
       // args order: tag, data, children, normalizationType, alwaysNormalize
       // internal version is used by render functions compiled from templates
-      vm._c = function (a, b, c, d) { return createElement(vm, a, b, c, d, false); };
+      vm._c = function (a, b, c, d) { console.log("_C", a, b, c ,d); return createElement(vm, a, b, c, d, false); };
       // normalization is always applied for the public version, used in
       // user-written render functions.
       vm.$createElement = function (a, b, c, d) { return createElement(vm, a, b, c, d, true); };
@@ -10078,7 +10079,6 @@
   
   
     function parseFor (exp) {
-
       var inMatch = exp.match(forAliasRE);
       if (!inMatch) { return }
       var res = {};
@@ -11037,11 +11037,13 @@
   
           var children = el.inlineTemplate ? null : genChildren(el, state, true);
           code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
+          // console.log("CODE", code)
         }
         // module transforms
         for (var i = 0; i < state.transforms.length; i++) {
           code = state.transforms[i](el, code);
         }
+        
         return code
       }
     }
@@ -11152,6 +11154,10 @@
       }
   
       el.forProcessed = true; // avoid recursion
+      // console.log('GENFORVUE', ((altHelper || '_l') + "((" + exp + ")," +
+      // "function(" + alias + iterator1 + iterator2 + "){" +
+      //   "return " + ((altGen || genElement)(el, state)) +
+      // '})').replace('_l', 'renderList').replace('_c', 'createElement').replace('_v', 'createTextVNode'))
       return (altHelper || '_l') + "((" + exp + ")," +
         "function(" + alias + iterator1 + iterator2 + "){" +
           "return " + ((altGen || genElement)(el, state)) +
@@ -11950,7 +11956,6 @@
         );
         return this
       }
-  
       var options = this.$options;
       // resolve template/el and convert to render function
       if (!options.render) {
@@ -11983,7 +11988,6 @@
           if (config.performance && mark) {
             mark('compile');
           }
-  
           var ref = compileToFunctions(template, {
             outputSourceRange: "development" !== 'production',
             shouldDecodeNewlines: shouldDecodeNewlines,
@@ -12005,7 +12009,6 @@
       }
       return mount.call(this, el, hydrating)
     };
-  
     /**
      * Get outerHTML of elements, taking care
      * of SVG elements in IE as well.
@@ -12019,8 +12022,6 @@
         return container.innerHTML
       }
     }
-  
     Vue.compile = compileToFunctions;
     return Vue;
-  
   }));

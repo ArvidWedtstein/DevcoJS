@@ -1,4 +1,4 @@
-const createElement = (tag, attrs, children) => {
+const createCustomElement = (tag, attrs, children) => {
   var element = document.createElement(tag);
   if (attrs) {
     Object.keys(attrs).forEach(function (key) {
@@ -20,14 +20,52 @@ const createElement = (tag, attrs, children) => {
 
 
 (function () {
-  
+  var DevcoNode = function DevcoNode (
+    tag,
+    data,
+    children,
+    text,
+    elm,
+    context,
+    componentOptions,
+    asyncFactory
+  ) {
+    this.tag = tag;
+    this.data = data;
+    this.children = children;
+    this.text = text;
+    this.elm = elm;
+    this.ns = undefined;
+    this.context = context;
+    this.fnContext = undefined;
+    this.fnOptions = undefined;
+    this.fnScopeId = undefined;
+    this.key = data && data.key;
+    this.componentOptions = componentOptions;
+    this.componentInstance = undefined;
+    this.parent = undefined;
+    this.raw = false;
+    this.isStatic = false;
+    this.isRootInsert = true;
+    this.isComment = false;
+    this.isCloned = false;
+    this.isOnce = false;
+    this.asyncFactory = asyncFactory;
+    this.asyncMeta = undefined;
+    this.isAsyncPlaceholder = false;
+
+    console.info((arguments.callee.toString().substring('function '.length))
+    .substring(0, (arguments.callee.toString().substring('function '.length))
+    .indexOf('(')), this.elm, this.tag)
+  };
+
   var controllers = {};
   var addController = function (name, constructor) {
 
     // This is styling for console messages
     const styling = `
       padding: 10px;
-      font-size: 20px;
+      font-size: 15px;
       border: solid #FFBB51 1px;
       border-radius: 0.25rem;
       background: repeating-linear-gradient(to top, rgba(255, 255, 255, 0.03) 0px 2px, transparent 2px 4px),linear-gradient(to bottom, #200933 75%, #3d0b43);
@@ -37,11 +75,21 @@ const createElement = (tag, attrs, children) => {
       styling: true
     };
 
+
+    // ----------------------------
+    // Regex
+    // ----------------------------
+    var forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
+    var forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
+    var stripParensRE = /^\(|\)$/g;
+
     // Types 
     var data = {};
     var hvis = {};
     var bindings = {};
     var forHver = {};
+    var html = {};
+    var bryter = {};
 
     var feil = function (a, b, c) {};
     var advarsel = function (a, b, c) {};
@@ -50,17 +98,22 @@ const createElement = (tag, attrs, children) => {
     {
       feil = function (msg) {
         if (config.styling) {
-          console.log(("%c[Devco feil]: " + msg), `${styling}`);
+          console.error(`%c[Devco Feil]: ${msg}`, styling);
         }
       };
       advarsel = function (msg) {
         if (config.styling) {
-          console.log(("%c[Devco advarsel]: " + msg), `${styling}`);
+          console.warn(`%c[Devco Åtvaring]: ${msg}`, styling);
         }
       };
       tips = function (msg) {
         if (config.styling) {
-          console.log("%c[Devco tips]: " + msg, styling);
+          console.log(`%c[Devco Tips]: ${msg}`, styling);
+        }
+      };
+      info = function (msg) {
+        if (config.styling) {
+          console.log(`%c[Devco Info]: ${msg}`, styling);
         }
       };
     }
@@ -96,6 +149,71 @@ const createElement = (tag, attrs, children) => {
       return array.filter(item => item == what).length;
     }
 
+    var createEmptyDevcoNode = function (text) {
+      if ( text === void 0 ) text = '';
+  
+      var node = new DevcoNode();
+      node.text = text;
+      node.isComment = true;
+      return node
+    };
+
+    function createTextDevcoNode (val) {
+      return new DevcoNode(undefined, undefined, undefined, String(val))
+    }
+
+    
+    function createElement (tag, data, children, normalizationType, alwaysNormalize) {
+      if (Array.isArray(data)) {
+        normalizationType = children;
+        children = data;
+        data = undefined;
+      }
+      return _createElement(tag, data, children, normalizationType)
+    }
+  
+    function _createElement (tag, data, children, normalizationType) {
+      if (!tag) {
+        // in case of component :is set to falsy value
+        return createEmptyDevcoNode()
+      }
+
+      // support single function children as default scoped slot
+      if (Array.isArray(children) && typeof children[0] === 'function') {
+        data = data || {};
+        data.scopedSlots = { default: children[0] };
+        children.length = 0;
+      }
+      
+      var devconode;
+      if (typeof tag === 'string') {
+        devconode = new DevcoNode(
+          tag, data, children,
+          undefined, undefined
+        );
+      }
+      if (Array.isArray(devconode)) {
+        return devconode
+      } else if (devconode !== undefined && devconode !== null) {
+        return devconode
+      } else {
+        return createEmptyDevcoNode()
+      }
+    }
+
+    /**
+     * 
+     * @param {DevcoNode} node 
+     */
+    function DevcoNodeToHtmlNode(node) {
+      // new HTMLElement() {
+      //   tag: node.tag,
+      //   node
+      // }
+      
+      return document.createElement(node.tag)
+    }
+
     // Define Data Element
     class DevcoData extends HTMLElement {
       constructor() {
@@ -107,7 +225,7 @@ const createElement = (tag, attrs, children) => {
     
         // Insert icon
         
-        var body = createElement('span', {class: "wrapper"}, []);
+        var body = createCustomElement('span', {class: "wrapper"}, []);
     
         var style = document.createElement('style');
     
@@ -119,9 +237,9 @@ const createElement = (tag, attrs, children) => {
     
         shadow.appendChild(style);
         shadow.appendChild(body);
-
         let jsonData = JSON.parse(this.textContent);
         Object.keys(jsonData).forEach(function (key) {
+          
           if (jsonData[key] instanceof Object) {
             if ((/^(true|false)/.test(jsonData[key])) || /^[0-9]+$/.test(jsonData[key])) {
               jsonData[key] = jsonData[key].replace('"', '')
@@ -130,7 +248,7 @@ const createElement = (tag, attrs, children) => {
           if (!(key in data)) {
             data[key] = jsonData[key]
           } else {
-            advarsel('Duplicate key: ' + key)
+            advarsel('Fleire nøkkler er funne av: ' + key)
           }
         });
       }
@@ -149,7 +267,7 @@ const createElement = (tag, attrs, children) => {
     
         // Insert icon
         
-        var body = createElement('span', {class: "wrapper"}, []);
+        var body = createCustomElement('span', {class: "wrapper"}, []);
     
         var style = document.createElement('style');
     
@@ -170,7 +288,7 @@ const createElement = (tag, attrs, children) => {
         // Remove all config options that are not defined in users config
         Object.keys(config).forEach(function (item) {
           if (countInArray(options, item) > 1) {
-            return feil(`Du kan ikke definere ${item} mer enn en gang`);
+            return feil(`Du kan ikkje definere ${item} meir enn ein gong`);
           }
           if (!options.includes(item)) {
             delete config[item]
@@ -184,7 +302,7 @@ const createElement = (tag, attrs, children) => {
     // Look for elements using the controller 
     var element = document.querySelector('[kontainer]');
     if (!element) {   
-      return console.error('Kontainer er ikke definert');
+      return feil('Kontainer er ikkje definert');
     }
 
     // Create a new instance and save it
@@ -209,9 +327,9 @@ const createElement = (tag, attrs, children) => {
 
 
     
-    Array.prototype.slice.call(element.querySelectorAll('[hvis]'))
+    Array.prototype.slice.call(element.querySelectorAll('[dersom]'))
       .map(function (element) {
-      var hvisValue = element.getAttribute('hvis');
+      var hvisValue = element.getAttribute('dersom');
       hvisValue = hvisValue;
       if (!hvis[hvisValue]) {
         hvis[hvisValue] = {
@@ -222,76 +340,8 @@ const createElement = (tag, attrs, children) => {
       hvis[hvisValue].elements.push(element);
     });   
 
-
-    // ----------------------------
-    // For-Loop Functions
-    // ----------------------------
-    
-    // For Loop Initialization
-    // Array.prototype.slice.call(element.querySelectorAll('[for]'))
-    //   .map(function (element) {
-    //   var forValue = element.getAttribute('for'); // not really needed
-
-    //   // Create attribute lists
-    //   element.attrsList = attributeList(element)
-    //   element.attrsMap = attributeMap(element)
-      
-    
-    //   // Sets Alias and For loop value to element
-    //   processFor(element)
-
-    //   // processes for loop with iterator stuff.
-    //   preTransformFor(element)
-
-    //   // processRawAttrs(element)
-      
-      
-    //   // Get Key Attribute (:key) and remove it from the list of attributes
-    //   processKey(element)
-      
-    //   console.log("ELEMENT", element.attrsList, element.key)
-
-
-    //   if (!forHver[element.key]) {
-    //     forHver[element.key] = {
-    //       key: element.key,
-    //       array: element.for,
-    //       alias: element.alias,
-    //       forValue: forValue,
-    //       elements: []
-    //     }
-    //     forHver[element.key].elements.push(element);
-    //   }
-    // });   
-  
-    
-
-
-    // Converts objects without '"' to object with '"' for JSON.parse
-    // const objectStr = ((str) => {
-    //   str = /^[\n\s]*if.*\(.*\)/.test(str) || /^(let|const)\s/.test(str) ? `(() => { ${str} })()` : str;
-    //   var tokens = str.split(",")
-    //   for (u = 0; u < tokens.length; u++) {
-    //     let t = tokens[u].split(" ")
-    //     for (i = 0; i < t.length; i++) {
-    //       if (/^(true|false)/.test(t[2]) || /^[0-9]+$/.test(t[2])) {
-    //         t[2] = t[2].trim().replace('"', '')
-    //       }
-    //       if (!t[1].startsWith('"')) {
-    //         t[1] = t[1].trim().replace(/^/, '"')
-    //         t[1] = t[1].slice(0, -1).concat('":')
-    //       } else if (t[1].startsWith("'")) {
-    //         t[1] = t[1].replace("'", '"')
-    //       }
-    //     }
-    //     tokens[u] = t.join(' ')
-    //   }
-    //   tokens = tokens.join(",")
-    //   return JSON.parse(tokens)
-    // })
     
     // bryter
-    var bryter = {};
     Array.prototype.slice.call(element.querySelectorAll('[brytar]'))
       .map(function (element) {
       var bryterValue = element.getAttribute('brytar');
@@ -302,15 +352,19 @@ const createElement = (tag, attrs, children) => {
           elements: []
         }
       }
+      for (var i = 0; i < element.children.length; i++) {
+        if (!element.children[i].hasAttribute('tilfelle')) {
+          return feil('Kvart born i bryter må ha tilfelle attributt')
+        }
+      }
       bryter[bryterValue].elements.push(element);
 
     });  
 
     // html data
-    var html = {};
-    Array.prototype.slice.call(element.querySelectorAll('[html]'))
+    Array.prototype.slice.call(element.querySelectorAll('[hypertekstoppmerknadspråk]')) // html
       .map(function (element) {
-      var htmlValue = element.getAttribute('html');
+      var htmlValue = element.getAttribute('hypertekstoppmerknadspråk');
           
       if (!html[htmlValue]) {
         html[htmlValue] = {
@@ -323,42 +377,166 @@ const createElement = (tag, attrs, children) => {
     });  
 
 
-    // Array.prototype.slice.call(element.querySelectorAll('[for]'))
-    //   .map(function (element) {
-    //   var forValue = element.getAttribute('for'); // not really needed
+    // ----------------------------
+    // For-Loop Functions
+    // ----------------------------
+    function getAndRemoveAttr (el, name, removeFromMap) {
+      var val;
+      if ((val = el.attributes[name]) != null) {
+        var list = Object.values(el.attributes);
+        for (var i = 0, l = list.length; i < l; i++) {
+          if (list[i].name === name) {
+            list.splice(i, 1);
+            break
+          }
+        }
+      }
+      if (removeFromMap) {
+        delete el.removeAttribute(name);
+      }
+      return val.value
+    }
+    function processFor (el) {
+      var exp;
+      if ((exp = getAndRemoveAttr(el, 'for'))) {
+        var res = parseFor(exp);
+        if (res) {
+          for (var key in res) {
+            el[key] = res[key];
+          }
+          return el
+        } else {
+          advarsel(
+            ("Ugyldig for expression: " + exp)
+          );
+        }
+      }
+    }
 
-    //   // Create attribute lists
-    //   // element.attrsList = attributeList(element)
-    //   // element.attrsMap = attributeMap(element)
-      
-    
-    //   // Sets Alias and For loop value to element
-    //   processFor(element)
+    function genFor (el) {
+      var exp = el.for;
+      var alias = el.alias;
+      var iterator1 = el.iterator1 ? ("," + (el.iterator1)) : '';
+      var iterator2 = el.iterator2 ? ("," + (el.iterator2)) : '';
 
-    //   // processes for loop with iterator stuff.
-    //   preTransformFor(element)
+  
+      el.forProcessed = true; // avoid recursion
+      return `renderList((${exp}), function(${alias}${iterator1}${iterator2}) { return createElement('${el.tagName}', [createTextDevcoNode('${el.innerText}')]) })`;
+    }
+    function renderList (val, render) {
+      var ret, i, l, keys, key;
+      if (Array.isArray(val) || typeof val === 'string') {
+        ret = new Array(val.length);
+        for (i = 0, l = val.length; i < l; i++) {
+          ret[i] = render(val[i], i);
+          console.log('RET', ret[i])
+        }
+      } else if (typeof val === 'number') {
+        ret = new Array(val);
+        for (i = 0; i < val; i++) {
+          ret[i] = render(i + 1, i);
+        }
+      } else if (isObject(val)) {
+        if (hasSymbol && val[Symbol.iterator]) {
+          ret = [];
+          var iterator = val[Symbol.iterator]();
+          var result = iterator.next();
+          while (!result.done) {
+            ret.push(render(result.value, ret.length));
+            result = iterator.next();
+          }
+        } else {
+          keys = Object.keys(val);
+          ret = new Array(keys.length);
+          for (i = 0, l = keys.length; i < l; i++) {
+            key = keys[i];
+            console.log(val[key], key, i)
+            ret[i] = render(val[key], key, i);
+          }
+        }
+      }
+      return ret
+    }
+    function parseFor(expression) {
+      var inMatch = expression.match(forAliasRE);
+      if (!inMatch) { return }
+      var res = {};
+      res.for = inMatch[2].trim();
+      var alias = inMatch[1].trim().replace(stripParensRE, '');
+      var iteratorMatch = alias.match(forIteratorRE);
+      if (iteratorMatch) {
+        res.alias = alias.replace(forIteratorRE, '').trim();
+        res.iterator1 = iteratorMatch[1].trim();
+        if (iteratorMatch[2]) {
+          res.iterator2 = iteratorMatch[2].trim();
+        }
+      } else {
+        res.alias = alias;
+      }
+      return res
+    }
 
-    //   // processRawAttrs(element)
-      
-      
-    //   // Get Key Attribute (:key) and remove it from the list of attributes
-    //   processKey(element)
-      
-    //   console.log("ELEMENT", element.attrsList, element.key)
+    Array.prototype.slice.call(element.querySelectorAll('[for]'))
+      .map(function (element) {
+      var forValue = element.getAttribute('for'); // not really needed
+
+      processFor(element);
 
 
-    //   if (!forHver[element.key]) {
-    //     forHver[element.key] = {
-    //       key: element.key,
-    //       array: element.for,
-    //       alias: element.alias,
-    //       forValue: forValue,
-    //       elements: []
-    //     }
-    //     forHver[element.key].elements.push(element);
-    //   }
-    // });   
+      console.log('FORLOOP', eval(genFor(element)));
+      eval(genFor(element)).forEach(function (child) {
+        console.log('CHILD', child)
+        element.parentNode.appendChild(child)
+      })
 
+      if (!forHver[element.key]) {
+        forHver[element.key] = {
+          key: element.key,
+          array: element.for,
+          alias: element.alias,
+          forValue: forValue,
+          elements: []
+        }
+        forHver[element.key].elements.push(element);
+      } else {
+        feil(`Du kan ikkje definere ${element.key} meir enn ein gong`);
+      }
+    });   
+
+    function processIf (el) {
+      var exp = getAndRemoveAttr(el, 'v-if');
+      if (exp) {
+        el.if = exp;
+        addIfCondition(el, {
+          exp: exp,
+          block: el
+        });
+      } else {
+        if (getAndRemoveAttr(el, 'v-else') != null) {
+          el.else = true;
+        }
+        var elseif = getAndRemoveAttr(el, 'v-else-if');
+        if (elseif) {
+          el.elseif = elseif;
+        }
+      }
+    }
+  
+    function processIfConditions (el, parent) {
+      var prev = findPrevElement(parent.children);
+      if (prev && prev.if) {
+        addIfCondition(prev, {
+          exp: el.elseif,
+          block: el
+        });
+      } else {
+        warn$2(
+          "v-" + (el.elseif ? ('else-if="' + el.elseif + '"') : 'else') + " " +
+          "used on element <" + (el.tag) + "> without corresponding v-if.",
+          el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else']
+        );
+      }
+    }
     // Update DOM element bound when controller property is set
     const handler = {
       set: function (target, prop, value) {    
@@ -379,6 +557,9 @@ const createElement = (tag, attrs, children) => {
         if (bryt) {
           bryt.elements.forEach(function (element) {
             for (var i = 0; i < element.children.length; i++) {
+              if (!element.children[i].hasAttribute('tilfelle')) {
+                return feil('Kvart born i bryter må ha tilfelle attributt')
+              }
               if (value == element.children[i].getAttribute('tilfelle')) {
                 element.children[i].style.display = 'block';
               } else {
@@ -387,11 +568,13 @@ const createElement = (tag, attrs, children) => {
             }
           });
         }
+
+        // TODO - Find a better solution for this
         if (hvis2) {
           hvis2.elements.forEach(function (element) {
             if (data[value] && (value in data)) {
               element.style.display = 'block';
-            } else if (!data[value] && (/^(true|false)/.test(value))) { // if true in statement
+            } else if (!data[value] && (/^(true|false)/.test(value))) { // if true in statement // 
               element.style.display = value == 'true' ? 'block' : 'none';
             } else {
               element.style.display = 'none';
@@ -424,7 +607,6 @@ const createElement = (tag, attrs, children) => {
     console.log(data)
     var proxy = new Proxy (ctrl, handler);
 
-    // Init data element
   
 
     // Listen DOM element update to set the controller property
@@ -441,7 +623,7 @@ const createElement = (tag, attrs, children) => {
       var hvisF = hvis[hvisValue];
 
       hvisF.elements.forEach(function (element) {
-        proxy[hvisF.hvisValue] = element.getAttribute("hvis");
+        proxy[hvisF.hvisValue] = element.getAttribute("dersom");
       })  
     });
 
@@ -452,8 +634,6 @@ const createElement = (tag, attrs, children) => {
         // let stuff = element.attrsMap["[[repeat]]"]
 
         if (forF.array in data) {
-
-          
           for (item in [data[stuff.expression]]) {
             console.log("FOR",item)
           
@@ -549,9 +729,9 @@ class Devcologo extends HTMLElement {
       imgUrl = 'devco-logo.png';
     }
 
-    var body = createElement('span', {class: "wrapper"}, [
-      createElement('span', {class: "icon"}, [
-        createElement('img', {src: imgUrl})
+    var body = createCustomElement('span', {class: "wrapper"}, [
+      createCustomElement('span', {class: "icon"}, [
+        createCustomElement('img', {src: imgUrl})
       ])
     ]);
 
@@ -606,17 +786,17 @@ class Hovercard extends HTMLElement {
       imgUrl = 'devco-logo.png';
     }
 
-    var body = createElement('div', {class: "container"}, [
-      createElement('div', {class: "card"}, [
-        createElement('div', {class: "face face1"}, [
-          createElement('div', {class: "content"}, [
-            createElement('img', {src: imgUrl}),
-            createElement('h3', {tekst: title})
+    var body = createCustomElement('div', {class: "container"}, [
+      createCustomElement('div', {class: "card"}, [
+        createCustomElement('div', {class: "face face1"}, [
+          createCustomElement('div', {class: "content"}, [
+            createCustomElement('img', {src: imgUrl}),
+            createCustomElement('h3', {tekst: title})
           ])
         ]),
-        createElement('div', {class: "face face2"}, [
-          createElement('div', {class: "content"}, [
-            createElement('p', {tekst: text})
+        createCustomElement('div', {class: "face face2"}, [
+          createCustomElement('div', {class: "content"}, [
+            createCustomElement('p', {tekst: text})
           ])
         ])
       ])

@@ -39,11 +39,10 @@
     </devco-data>
     <devco-config>
       styling
-      styling
     </devco-config>
     <div>
       <input id="input" koble="message"/>
-      <div hvis="bruh" onclick="onButtonClick()">
+      <div dersom="bruh" onclick="onButtonClick()">
         <button>Click!</button>
       </div>
       <ul brytar="message">
@@ -53,20 +52,20 @@
       </ul>
       <devco-logo text="test"></devco-logo>
       <div id="vue">
-        <p html="bruh"></p>
-        <p html="loop"></p>
+        <p hypertekstoppmerknadspråk="bruh"></p>
+        <p hypertekstoppmerknadspråk="loop"></p>
+        <p hypertekstoppmerknadspråk="t"></p>
       </div>
       <hover-card tittel="pain?" tekst="yeeeeeeeeeeeees"><p>hahahahhah</p></hover-card>
     </div>
     <div>
-      <div for="item in ['test', 'test2', 'test3']" :key="item">
-        <p html="item">{{ test }}</p>
-      </div>  
       <div>
-        <p>{{ test }}</p>
+        <p for="i in ['test', 'test2', 'test3']" :key="item">abcfsdfdsfdsfdsffdsfd</p>
+      </div>  
+      <!-- <div>
         <button>Change it</button>
         <p for="i in test" :key="i">{{i}}</p>
-      </div>
+      </div> -->
     </div>
   </div>
   <div>
@@ -76,7 +75,7 @@
       <p></p>
     </div>
     <div id="abbVue">
-      <p v-for="i in test">t</p>
+      <p v-for="i in ['test', 'test2', 'test3']">t</p>
       <p v-text="a"></p>
       <p>{{a}}</p>
     </div>
@@ -96,10 +95,10 @@
     // console.log(instance)
 
     // Vue instance
-    // var vm = new Vue({
-    //   el: '#abbVue',
-    //   data: data
-    // })
+    var vm = new Vue({
+      el: '#abbVue',
+      data: data
+    })
     // console.log(vm)
 
 
