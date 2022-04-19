@@ -54,9 +54,9 @@ const createCustomElement = (tag, attrs, children) => {
     this.asyncMeta = undefined;
     this.isAsyncPlaceholder = false;
 
-    console.info((arguments.callee.toString().substring('function '.length))
-    .substring(0, (arguments.callee.toString().substring('function '.length))
-    .indexOf('(')), this.elm, this.tag)
+    // console.info((arguments.callee.toString().substring('function '.length))
+    // .substring(0, (arguments.callee.toString().substring('function '.length))
+    // .indexOf('(')), this.elm, this.tag)
   };
 
   var controllers = {};
@@ -429,7 +429,7 @@ const createCustomElement = (tag, attrs, children) => {
         ret = new Array(val.length);
         for (i = 0, l = val.length; i < l; i++) {
           ret[i] = render(val[i], i);
-          console.log('RET', ret[i])
+          // console.log('RET', ret[i])
         }
       } else if (typeof val === 'number') {
         ret = new Array(val);
@@ -503,40 +503,40 @@ const createCustomElement = (tag, attrs, children) => {
       }
     });   
 
-    function processIf (el) {
-      var exp = getAndRemoveAttr(el, 'v-if');
-      if (exp) {
-        el.if = exp;
-        addIfCondition(el, {
-          exp: exp,
-          block: el
-        });
-      } else {
-        if (getAndRemoveAttr(el, 'v-else') != null) {
-          el.else = true;
-        }
-        var elseif = getAndRemoveAttr(el, 'v-else-if');
-        if (elseif) {
-          el.elseif = elseif;
-        }
-      }
-    }
+    // function processIf (el) {
+    //   var exp = getAndRemoveAttr(el, 'v-if');
+    //   if (exp) {
+    //     el.if = exp;
+    //     addIfCondition(el, {
+    //       exp: exp,
+    //       block: el
+    //     });
+    //   } else {
+    //     if (getAndRemoveAttr(el, 'v-else') != null) {
+    //       el.else = true;
+    //     }
+    //     var elseif = getAndRemoveAttr(el, 'v-else-if');
+    //     if (elseif) {
+    //       el.elseif = elseif;
+    //     }
+    //   }
+    // }
   
-    function processIfConditions (el, parent) {
-      var prev = findPrevElement(parent.children);
-      if (prev && prev.if) {
-        addIfCondition(prev, {
-          exp: el.elseif,
-          block: el
-        });
-      } else {
-        warn$2(
-          "v-" + (el.elseif ? ('else-if="' + el.elseif + '"') : 'else') + " " +
-          "used on element <" + (el.tag) + "> without corresponding v-if.",
-          el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else']
-        );
-      }
-    }
+    // function processIfConditions (el, parent) {
+    //   var prev = findPrevElement(parent.children);
+    //   if (prev && prev.if) {
+    //     addIfCondition(prev, {
+    //       exp: el.elseif,
+    //       block: el
+    //     });
+    //   } else {
+    //     warn$2(
+    //       "v-" + (el.elseif ? ('else-if="' + el.elseif + '"') : 'else') + " " +
+    //       "used on element <" + (el.tag) + "> without corresponding v-if.",
+    //       el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else']
+    //     );
+    //   }
+    // }
     // Update DOM element bound when controller property is set
     const handler = {
       set: function (target, prop, value) {    
