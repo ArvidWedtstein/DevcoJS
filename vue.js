@@ -8,7 +8,6 @@
     typeof define === 'function' && define.amd ? define(factory) :
     (global = global || self, global.Vue = factory());
   }(this, function () { 'use strict';
-  
     /*  */
   
     var emptyObject = Object.freeze({});
@@ -9167,6 +9166,10 @@
         rawTokens.push(tokenValue = text.slice(lastIndex));
         tokens.push(JSON.stringify(tokenValue));
       }
+      console.log('PARSETEXT', {
+        expression: tokens.join('+'),
+        tokens: rawTokens
+      })
       return {
         expression: tokens.join('+'),
         tokens: rawTokens
@@ -9971,6 +9974,7 @@
           }
         }
       });
+      console.log('PARSEHTML', root)
       return root
     }
   
@@ -11016,6 +11020,7 @@
         return genStatic(el, state)
       } else if (el.once && !el.onceProcessed) {
         return genOnce(el, state)
+        
       } else if (el.for && !el.forProcessed) {
         return genFor(el, state)
       } else if (el.if && !el.ifProcessed) {
@@ -11037,7 +11042,7 @@
   
           var children = el.inlineTemplate ? null : genChildren(el, state, true);
           code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
-          // console.log("CODE", code)
+          console.log("CODE", code)
         }
         // module transforms
         for (var i = 0; i < state.transforms.length; i++) {
@@ -11047,6 +11052,8 @@
         return code
       }
     }
+
+    
   
     // hoist static sub-trees out
     function genStatic (el, state) {
@@ -11154,10 +11161,10 @@
       }
   
       el.forProcessed = true; // avoid recursion
-      // console.log('GENFORVUE', ((altHelper || '_l') + "((" + exp + ")," +
-      // "function(" + alias + iterator1 + iterator2 + "){" +
-      //   "return " + ((altGen || genElement)(el, state)) +
-      // '})').replace('_l', 'renderList').replace('_c', 'createElement').replace('_v', 'createTextVNode'))
+      console.log('GENFORVUE', ((altHelper || '_l') + "((" + exp + ")," +
+      "function(" + alias + iterator1 + iterator2 + "){" +
+        "return " + ((altGen || genElement)(el, state)) +
+      '})'))
       return (altHelper || '_l') + "((" + exp + ")," +
         "function(" + alias + iterator1 + iterator2 + "){" +
           "return " + ((altGen || genElement)(el, state)) +
@@ -11818,7 +11825,6 @@
             );
           }
         }
-  
         return (cache[key] = res)
       }
     }
@@ -11901,6 +11907,7 @@
       template,
       options
     ) {
+      console.log('TEMPLATE', options)
       var ast = parse(template.trim(), options);
       if (options.optimize !== false) {
         optimize(ast, options);
@@ -11946,7 +11953,6 @@
       el,
       hydrating
     ) {
-      console.info("MOUNT")
       el = el && query(el);
   
       /* istanbul ignore if */

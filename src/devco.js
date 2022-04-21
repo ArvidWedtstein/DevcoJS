@@ -20,6 +20,7 @@ const createCustomElement = (tag, attrs, children) => {
 
 
 (function () {
+  console.time('devco');
   var DevcoNode = function DevcoNode (
     tag,
     data,
@@ -206,12 +207,11 @@ const createCustomElement = (tag, attrs, children) => {
      * @param {DevcoNode} node 
      */
     function DevcoNodeToHtmlNode(node) {
-      // new HTMLElement() {
-      //   tag: node.tag,
-      //   node
-      // }
+      console.log('NODE', node)
+      const tag = document.createElement(node.tag);
+      tag.innerText = node.children[0].text;
       
-      return document.createElement(node.tag)
+      return tag;
     }
 
     // Define Data Element
@@ -485,8 +485,8 @@ const createCustomElement = (tag, attrs, children) => {
 
       console.log('FORLOOP', eval(genFor(element)));
       eval(genFor(element)).forEach(function (child) {
-        console.log('CHILD', child)
-        element.parentNode.appendChild(child)
+        console.log('CHILD', DevcoNodeToHtmlNode(child))
+        element.parentNode.appendChild(DevcoNodeToHtmlNode(child))
       })
 
       if (!forHver[element.key]) {
@@ -694,6 +694,7 @@ const createCustomElement = (tag, attrs, children) => {
   this.norsk = {
       controller: addController
   }
+  console.timeEnd('devco')
 })();
     
 /* User code */
