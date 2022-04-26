@@ -38,6 +38,7 @@
           <p hypertekstoppmerknadspråk="loop"></p>
           <p hypertekstoppmerknadspråk="t"></p>
         </div>
+        <p for="i in testobject">t</p>
         <!-- <hover-card tittel="pain?" tekst="yeeeeeeeeeeeees"><p>hahahahhah</p></hover-card> -->
       </div>
       <div>
@@ -50,10 +51,10 @@
         </div> -->
       </div>
     </div>
-    <!-- <div>
+    <div>
       <div id="abb">
-        <p v-text="a">t</p>
-        <p></p>
+        <p for="a in testobject" :key="a">t</p>
+        <p hypertekstoppmerknadspråk="loop"></p>
         <p></p>
       </div>
       <div id="abbVue">
@@ -62,7 +63,7 @@
         <input>
         <p>{{a}}</p>
       </div>
-    </div> -->
+    </div>
   
   </div>
 </body>
@@ -92,7 +93,7 @@
     el: "#abb",
     data: data
   })
-  // console.log(instance)
+  console.log(instance)
 
   // Vue instance
   // var vm = new Vue({
