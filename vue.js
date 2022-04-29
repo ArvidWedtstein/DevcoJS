@@ -815,6 +815,7 @@
       var node = new VNode();
       node.text = text;
       node.isComment = true;
+      console.error(node)
       return node
     };
   
@@ -1675,6 +1676,7 @@
       }
       // call factory function for non-Function types
       // a value is Function if its prototype is function even across different execution context
+
       return typeof def === 'function' && getType(prop.type) !== 'Function'
         ? def.call(vm)
         : def
@@ -1690,6 +1692,7 @@
       vm,
       absent
     ) {
+      
       if (prop.required && absent) {
         warn(
           'Missing required prop: "' + name + '"',
@@ -1700,6 +1703,7 @@
       if (value == null && !prop.required) {
         return
       }
+
       var type = prop.type;
       var valid = !type || type === true;
       var expectedTypes = [];
@@ -2431,6 +2435,7 @@
           }
         }
       }
+      
       return res
     }
   
@@ -2799,6 +2804,7 @@
             ) {
               hash = data;
             } else {
+              
               var type = data.attrs && data.attrs.type;
               hash = asProp || config.mustUseProp(tag, type, key)
                 ? data.domProps || (data.domProps = {})
@@ -3399,6 +3405,7 @@
           'Always create fresh vnode data objects in each render!',
           context
         );
+        
         return createEmptyVNode()
       }
       // object syntax in v-bind
@@ -3553,7 +3560,7 @@
       Vue.prototype._render = function () {
         var vm = this;
         var ref = vm.$options;
-        console.log('REF', ref)
+        
         var render = ref.render;
         var _parentVnode = ref._parentVnode;
   
@@ -4043,6 +4050,7 @@
       el,
       hydrating
     ) {
+      console.log('MOUNT COMPONET VUE', vm, el, hydrating)
       vm.$el = el;
       if (!vm.$options.render) {
         vm.$options.render = createEmptyVNode;
@@ -5911,6 +5919,7 @@
             cbs[hooks[i]].push(modules[j][hooks[i]]);
           }
         }
+        console.log('VUE CBS', cbs)
       }
   
       function emptyNodeAt (elm) {
@@ -6511,6 +6520,7 @@
       }
   
       return function patch (oldVnode, vnode, hydrating, removeOnly) {
+        console.log("PATCH", vnode)
         if (isUndef(vnode)) {
           if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
           return
@@ -6561,6 +6571,7 @@
             var parentElm = nodeOps.parentNode(oldElm);
             
             // create new node
+            console.log("VUENOD", vnode)
             createElm(
               vnode,
               insertedVnodeQueue,
@@ -6570,6 +6581,7 @@
               oldElm._leaveCb ? null : parentElm,
               nodeOps.nextSibling(oldElm)
             );
+            console.log("VUENOD", vnode)
   
             // update parent placeholder node element, recursively
             if (isDef(vnode.parent)) {
@@ -6611,6 +6623,7 @@
         }
   
         invokeInsertHook(vnode, insertedVnodeQueue, isInitialPatch);
+        
         return vnode.elm
       }
     }
@@ -7647,6 +7660,7 @@
     var svgContainer;
   
     function updateDOMProps (oldVnode, vnode) {
+      console.log('UPDATE DOM PROPS VUE', oldVnode, vnode)
       if (isUndef(oldVnode.data.domProps) && isUndef(vnode.data.domProps)) {
         return
       }
@@ -7797,6 +7811,7 @@
      * so that parent component's style could override it
      */
     function getStyle (vnode, checkChild) {
+      
       var res = {};
       var styleData;
   
@@ -8069,6 +8084,7 @@
       expectedType,
       cb
     ) {
+      
       var ref = getTransitionInfo(el, expectedType);
       var type = ref.type;
       var timeout = ref.timeout;
@@ -8169,6 +8185,7 @@
     /*  */
   
     function enter (vnode, toggleDisplay) {
+      console.error('ASSERTPROP', vnode)
       var el = vnode.elm;
   
       // call leave callback now
@@ -8500,8 +8517,8 @@
     // the directive module should be applied last, after all
     // built-in modules have been applied.
     var modules = platformModules.concat(baseModules);
+    console.log('MODULES', modules)
     var patch = createPatchFunction({ nodeOps: nodeOps, modules: modules });
-  
     /**
      * Not type checking this file because flow doesn't like attaching
      * properties to Elements.
@@ -8653,7 +8670,7 @@
     var show = {
       bind: function bind (el, ref, vnode) {
         var value = ref.value;
-  
+        
         vnode = locateNode(vnode);
         var transition$$1 = vnode.data && vnode.data.transition;
         var originalDisplay = el.__vOriginalDisplay =
@@ -8845,6 +8862,7 @@
         // component instance. This key will be used to remove pending leaving nodes
         // during entering.
         var id = "__transition-" + (this._uid) + "-";
+        
         child.key = child.key == null
           ? child.isComment
             ? id + 'comment'
@@ -8931,6 +8949,7 @@
       },
   
       render: function render (h) {
+        console.log('VUERENDER', h)
         var tag = this.tag || this.$vnode.data.tag || 'span';
         var map = Object.create(null);
         var prevChildren = this.prevChildren = this.children;
@@ -9041,6 +9060,7 @@
     };
   
     function callPendingCbs (c) {
+      console.log('VUECaLLPENDINGCBS', c)
       /* istanbul ignore if */
       if (c.elm._moveCb) {
         c.elm._moveCb();
@@ -9749,6 +9769,7 @@
       }
   
       function trimEndingWhitespace (el) {
+
         // remove trailing whitespace node
         if (!inPre) {
           var lastNode;
@@ -10699,6 +10720,7 @@
   
     function markStatic$1 (node) {
       node.static = isStatic(node);
+      
       if (node.type === 1) {
         // do not make component slot content static. this avoids
         // 1. components not able to mutate slot nodes
@@ -10980,8 +11002,7 @@
     /*  */
   
   
-  
-  
+
   
     var CodegenState = function CodegenState (options) {
       this.options = options;
@@ -11017,6 +11038,7 @@
       }
   
       if (el.staticRoot && !el.staticProcessed) {
+        console.log('STATIC PROCESSED', genStatic(el, state))
         return genStatic(el, state)
       } else if (el.once && !el.onceProcessed) {
         return genOnce(el, state)
@@ -11042,7 +11064,6 @@
   
           var children = el.inlineTemplate ? null : genChildren(el, state, true);
           code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
-          console.log("CODE", code)
         }
         // module transforms
         for (var i = 0; i < state.transforms.length; i++) {
@@ -11057,6 +11078,7 @@
   
     // hoist static sub-trees out
     function genStatic (el, state) {
+      console.log('GEN STATIC')
       el.staticProcessed = true;
       // Some elements (templates) need to behave differently inside of a v-pre
       // node.  All pre nodes are static roots, so we can use this as a location to
@@ -11290,6 +11312,7 @@
       }
       if (ast && ast.type === 1) {
         var inlineRenderFns = generate(ast, state.options);
+        console.log('INLINERENDERFS')
         return ("inlineTemplate:{render:function(){" + (inlineRenderFns.render) + "},staticRenderFns:[" + (inlineRenderFns.staticRenderFns.map(function (code) { return ("function(){" + code + "}"); }).join(',')) + "]}")
       }
     }
@@ -11417,6 +11440,7 @@
           ? getNormalizationType(children, state.maybeComponent)
           : 0;
         var gen = altGenNode || genNode;
+        console.log('GENCHILDREN', ("[" + (children.map(function (c) { return gen(c, state); }).join(',')) + "]" + (normalizationType$1 ? ("," + normalizationType$1) : '')))
         return ("[" + (children.map(function (c) { return gen(c, state); }).join(',')) + "]" + (normalizationType$1 ? ("," + normalizationType$1) : ''))
       }
     }
@@ -11429,6 +11453,7 @@
       children,
       maybeComponent
     ) {
+     
       var res = 0;
       for (var i = 0; i < children.length; i++) {
         var el = children[i];
@@ -11437,6 +11462,7 @@
         }
         if (needsNormalization(el) ||
             (el.ifConditions && el.ifConditions.some(function (c) { return needsNormalization(c.block); }))) {
+              
           res = 2;
           break
         }
@@ -11454,10 +11480,13 @@
   
     function genNode (node, state) {
       if (node.type === 1) {
+        console.log('GENNODE', node.type, genElement(node, state))
         return genElement(node, state)
       } else if (node.type === 3 && node.isComment) {
+        console.log('GENCOMMENT', node.type, genComment(node))
         return genComment(node)
       } else {
+        console.log('GENTEXT', node.type, genText(node))
         return genText(node)
       }
     }
@@ -11563,6 +11592,7 @@
     }
   
     function checkNode (node, warn) {
+      console.warn('CHECKNODE', node)
       if (node.type === 1) {
         for (var name in node.attrsMap) {
           if (dirRE.test(name)) {
@@ -11768,8 +11798,9 @@
         }
   
         // compile
+        console.log('VUEKOMPILER', template, options)
         var compiled = compile(template, options);
-  
+        console.log('VUEKOMPILED', compiled)
         // check compilation errors/tips
         {
           if (compiled.errors && compiled.errors.length) {
@@ -11913,6 +11944,7 @@
         optimize(ast, options);
       }
       var code = generate(ast, options);
+      console.log('VUEASTCODE', code)
       return {
         ast: ast,
         render: code.render,
@@ -11953,6 +11985,7 @@
       el,
       hydrating
     ) {
+      console.log('VUE MOUNT')
       el = el && query(el);
   
       /* istanbul ignore if */
@@ -12029,5 +12062,6 @@
       }
     }
     Vue.compile = compileToFunctions;
+    // console.log('VUE', Vue.compile)
     return Vue;
   }));
