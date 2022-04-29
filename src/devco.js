@@ -3497,6 +3497,7 @@
       }
     }
     function processOnce (el) {
+      console.log('PROCESS ONCE')
       var once$$1 = hentOgFjernAttr(el, 'engang');
       if (once$$1 != null) {
         el.once = true;
