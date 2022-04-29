@@ -3478,7 +3478,7 @@
         if (
           map[attrs[i].name] && !isIE && !isEdge
         ) {
-          warn$2('duplisert attributt: ' + attrs[i].name, attrs[i]);
+          advarsel('duplisert attributt: ' + attrs[i].name, attrs[i]);
         }
         map[attrs[i].name] = attrs[i].value;
       }
