@@ -58,9 +58,6 @@
       this.asyncMeta = undefined;
       this.isAsyncPlaceholder = false;
   
-      // console.info((arguments.callee.toString().substring('function '.length))
-      // .substring(0, (arguments.callee.toString().substring('function '.length))
-      // .indexOf('(')), this.elm, this.tag)
     };
   
 
@@ -121,7 +118,6 @@
     var dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
     var invalidAttributeRE = /[\s"'<>\/=]/;
     var defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
-    var regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g;
     var dirRE = /^v-|^@|^:|^#/;
     var argRE = /:(.*)$/;
     var bindRE = /^:|^\.|^v-bind:/;
@@ -281,7 +277,7 @@
         children = data;
         data = undefined;
       }
-      return _createElement(tag, data, children, normalizationType)
+      return _lagElement(tag, data, children, normalizationType)
     }
     function analysereModifikatorer (name) {
       var match = name.match(modifierRE);
@@ -297,6 +293,28 @@
     function detectErrors (ast, warn) {
       if (ast) {
         checkNode(ast, warn);
+      }
+    }
+
+    function checkExpression (exp, text, warn, range) {
+      try {
+        new Function(("return " + exp));
+      } catch (e) {
+        var keywordMatch = exp.replace(stripStringRE, '').match(prohibitedKeywordRE);
+        if (keywordMatch) {
+          warn(
+            "avoid using JavaScript keyword as property name: " +
+            "\"" + (keywordMatch[0]) + "\"\n  Raw expression: " + (text.trim()),
+            range
+          );
+        } else {
+          warn(
+            "invalid expression: " + (e.message) + " in\n\n" +
+            "    " + exp + "\n\n" +
+            "  Raw expression: " + (text.trim()) + "\n",
+            range
+          );
+        }
       }
     }
   
@@ -535,7 +553,7 @@
      * @param {*} children 
      * @returns 
      */
-    function _createElement (tag, data, children) {
+    function _lagElement (tag, data, children) {
       if (!tag) {
         // in case of component :is set to falsy value
         return lagTomDevcoNode()
@@ -569,12 +587,6 @@
      * @description Currently not used
      * @param {DevcoNode} node 
      */
-    function DevcoNodeToHtmlNode(node) {
-      const tag = document.createElement(node.tag);
-      tag.innerText = node.children[0].text;
-      
-      return tag;
-    }
 
     
     // Define Config Element
@@ -625,7 +637,6 @@
       return feil('Kontainer er ikkje definert');
     }
 
-    // Create a new instance and save it
 
 
     // Get elements bound to properties
@@ -683,9 +694,9 @@
     });  
 
     // html data
-    Array.prototype.slice.call(element.querySelectorAll('[hypertekstoppmerknadspråk]')) // html
+    Array.prototype.slice.call(element.querySelectorAll('[tekst]')) // html
       .map(function (element) {
-      var htmlValue = element.getAttribute('hypertekstoppmerknadspråk');
+      var htmlValue = element.getAttribute('tekst');
           
       if (!html[htmlValue]) {
         html[htmlValue] = {
@@ -1022,6 +1033,25 @@
       var re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr;
       return value.replace(re, function (match) { return decodingMap[match]; })
     }
+
+
+    function renderStatic (index, isInFor) {
+      var cached = this._staticTrees || (this._staticTrees = []);
+      var tree = cached[index];
+      // if has already-rendered static tree and not inside v-for,
+      // we can reuse the same tree.
+      if (tree && !isInFor) {
+        return tree
+      }
+      // otherwise, render a fresh tree.
+      tree = cached[index] = this.$options.staticRenderFns[index].call(
+        this._renderProxy,
+        null,
+        this // for render fns generated for functional component templates
+      );
+      markStatic(tree, ("__static__" + index), false);
+      return tree
+    }
     function analyserHTML (html, options) {
       var stack = [];
       var expectHTML = options.expectHTML;
@@ -1287,6 +1317,7 @@
       target._l = renderList;
       target._v = lagTekstDevcoNode;
       target._e = lagTomDevcoNode;
+      target._m = renderStatic;
     }
     /**
      * @description Genererer code
@@ -1379,26 +1410,8 @@
       // second pass: mark static roots.
       markStaticRoots(root, false);
     }
-    function renderStatic (
-      index,
-      isInFor
-    ) {
-      var cached = this._staticTrees || (this._staticTrees = []);
-      var tree = cached[index];
-      // if has already-rendered static tree and not inside v-for,
-      // we can reuse the same tree.
-      if (tree && !isInFor) {
-        return tree
-      }
-      // otherwise, render a fresh tree.
-      tree = cached[index] = this.$options.staticRenderFns[index].call(
-        this._renderProxy,
-        null,
-        this // for render fns generated for functional component templates
-      );
-      markStatic(tree, ("__static__" + index), false);
-      return tree
-    }
+
+    
   
     /**
      * Runtime helper for v-once.
@@ -1707,8 +1720,8 @@
             data = genData$2(el, state);
           }
           var children = el.inlineTemplate ? null : genBarn(el, state, true);
-          // code = "lagElement('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
-          code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
+          code = "lagElement('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
+          // code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
         }
         // module transforms
         for (var i = 0; i < state.transforms.length; i++) {
@@ -3910,7 +3923,56 @@
         updateDirectives(vnode, emptyNode);
       }
     };
+
+    var initProxy;
+
+    {
+      var allowedGlobals = lagKart(
+        'Infinity,undefined,NaN,isFinite,isNaN,' +
+        'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +
+        'Math,Number,Date,Array,Object,Boolean,String,RegExp,Map,Set,JSON,Intl,BigInt,' +
+        'require' // for Webpack/Browserify
+      );
+      initProxy = function initProxy (vm) {
+        if (hasProxy) {
+          // determine which proxy handler to use
+          var options = vm.$options;
+          var handlers = options.render && options.render._withStripped
+            ? getHandler
+            : hasHandler;
+          vm._renderProxy = new Proxy(vm, handlers);
+        } else {
+          vm._renderProxy = vm;
+        }
+      };
+      var hasProxy =
+        typeof Proxy !== 'undefined' && isNative(Proxy);
+
+
+      var hasHandler = {
+        has: function has (target, key) {
+          var has = key in target;
+          var isAllowed = allowedGlobals(key) ||
+            (typeof key === 'string' && key.charAt(0) === '_' && !(key in target.$data));
+          if (!has && !isAllowed) {
+            if (key in target.$data) { warnReservedPrefix(target, key); }
+            else { warnNonPresent(target, key); }
+          }
+          return has || !isAllowed
+        }
+      };
   
+      var getHandler = {
+        get: function get (target, key) {
+          if (typeof key === 'string' && !(key in target)) {
+            if (key in target.$data) { warnReservedPrefix(target, key); }
+            else { warnNonPresent(target, key); }
+          }
+          return target[key]
+        }
+      };
+    }
+    
     function updateDirectives (oldVnode, vnode) {
       if (oldVnode.data.directives || vnode.data.directives) {
         _update(oldVnode, vnode);
@@ -4086,6 +4148,7 @@
       Devco.prototype._render = function () {
         
         var vm = this;
+        console.log('VMAAA', vm)
         // vm.$options.render = lagTomDevcoNode;
         // vm.$lagElement = function (a, b, c, d) { return lagElement(vm, a, b, c, d, true); };
 
@@ -4112,6 +4175,8 @@
           // separately from one another. Nested component's render fns are called
           // when parent component is patched.
           currentRenderingInstance = vm;
+          console.log('RENDER', vm)
+          // RENDERPROXY is not defined
           devconode = render.call(vm._renderProxy, vm.$lagElement);
         } catch (e) {
           feil(e, vm, "render");
@@ -4178,6 +4243,9 @@
       var updateComponent;
       
       updateComponent = function () {
+        console.log('VMMMMM', vm)
+
+        // VM OPPDATER MANGLER
         vm._oppdater(vm._render(), hydrating);
       };
   
@@ -4439,6 +4507,10 @@
           );
         }
 
+        {
+          initProxy(vm);
+        }
+
         vm._self = vm;
         initRender(vm);
 
@@ -4697,6 +4769,7 @@
             delimiters: options.delimiters,
             comments: options.comments
           }, this);
+
           var render = ref.render;
           var staticRenderFns = ref.staticRenderFns;
           options.render = render;
