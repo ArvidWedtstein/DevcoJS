@@ -3308,6 +3308,7 @@
       // activeInstance in lifecycle state
       parent
     ) {
+
       var options = {
         _isComponent: true,
         _parentVnode: vnode,
@@ -6521,6 +6522,7 @@
   
       return function patch (oldVnode, vnode, hydrating, removeOnly) {
         console.log("PATCH", vnode)
+        
         if (isUndef(vnode)) {
           if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
           return
@@ -11078,7 +11080,7 @@
   
     // hoist static sub-trees out
     function genStatic (el, state) {
-      console.log('GEN STATIC')
+      console.log('GEN STATIC', state)
       el.staticProcessed = true;
       // Some elements (templates) need to behave differently inside of a v-pre
       // node.  All pre nodes are static roots, so we can use this as a location to
@@ -11480,13 +11482,10 @@
   
     function genNode (node, state) {
       if (node.type === 1) {
-        console.log('GENNODE', node.type, genElement(node, state))
         return genElement(node, state)
       } else if (node.type === 3 && node.isComment) {
-        console.log('GENCOMMENT', node.type, genComment(node))
         return genComment(node)
       } else {
-        console.log('GENTEXT', node.type, genText(node))
         return genText(node)
       }
     }
@@ -11837,6 +11836,7 @@
         res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
           return createFunction(code, fnGenErrors)
         });
+        console.log('RESSTATIC', res.staticRenderFns)
   
         // check function generation errors.
         // this should only happen if there is a bug in the compiler itself.
@@ -11938,7 +11938,6 @@
       template,
       options
     ) {
-      console.log('TEMPLATE', options)
       var ast = parse(template.trim(), options);
       if (options.optimize !== false) {
         optimize(ast, options);
@@ -12035,6 +12034,7 @@
             comments: options.comments
           }, this);
           var render = ref.render;
+          console.log('REF', ref.staticRenderFns)
           var staticRenderFns = ref.staticRenderFns;
           options.render = render;
           options.staticRenderFns = staticRenderFns;

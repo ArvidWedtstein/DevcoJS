@@ -18,7 +18,6 @@
   </style>
 
 </head>
-<!--https://github.com/vuejs/vue/blob/6aa11872c88481dfa2da151536317176c48f226c/packages/weex-template-compiler/build.js#L942-->
 <body>
   <div>
     <div kontainer>
@@ -32,44 +31,35 @@
           <li tilfelle="2">test2</li>
           <li tilfelle="3">test3</li>
         </ul>
-        <devco-logo text="test"></devco-logo>
-        <div id="vue">
-          <p tekst="bruh"></p>
-          <p tekst="loop"></p>
-          <p tekst="t"></p>
-        </div>
-        <!-- <p for="i in testobject">t</p> -->
+        <!-- <devco-logo text="test"></devco-logo> -->
         <!-- <hover-card tittel="pain?" tekst="yeeeeeeeeeeeees"><p>hahahahhah</p></hover-card> -->
       </div>
       <div>
         <div>
-          <!-- <p for="i in ['test', 'test2', 'test3', 'test4']" :key="item" hypertekstoppmerknadspråk="bruh">abcfsdfdsfdsfdsffdsfd</p> -->
         </div>  
         <!-- <div>
           <button>Change it</button>
-          <p for="i in test" :key="i">{{i}}</p>
         </div> -->
       </div>
     </div>
     <div>
-      <div id="abb">
-        <p for="n in 10" :key="n">t</p>
-        <p tekst="loop"></p>
+      <div id="abb"> 
+          <p>test</p>
+        <!-- <p tekst="loop"></p> -->
         <!-- <p>testdevco</p> -->
       </div>
       <div id="abbVue">
-        <!-- <p v-for="i in ['test1', 'test2', 'test3','test4']">t</p> -->
-        <!-- <p>testvue</p> -->
+        <p>testvue</p>
         <!-- <p v-text="a"></p> -->
-        <!-- <p>{{a}}</p> -->
       </div>
     </div>
   
   </div>
 </body>
 <!-- <script src="../index.js"></script> -->
-<!-- <script src="../vue.js"></script> -->
+<script src="../vue.js"></script>
 <script src="../src/devco.js"></script>
+<script src="../src/devcoTags.js"></script>
 <!-- <script src="../src/devco.js"></script> -->
 <!-- <script src="../vue2.js"></script> -->
 <script>
@@ -96,10 +86,10 @@
   // console.log(instance)
 
   // Vue instance
-  // var vm = new Vue({
-  //   el: '#abbVue',
-  //   data: data
-  // })
+  var vm = new Vue({
+    el: '#abbVue',
+    data: data
+  })
   // console.log(vm)
 
 
